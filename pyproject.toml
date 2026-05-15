@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bpmn-hybrid-eval"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.25",
+    "python-dotenv",
+    "structlog",
+    "pytest",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["agents"]
