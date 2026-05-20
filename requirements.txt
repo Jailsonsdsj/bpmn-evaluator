@@ -1,4 +1,5 @@
 anthropic>=0.25
+pymupdf>=1.24
 python-dotenv
 structlog
 pytest

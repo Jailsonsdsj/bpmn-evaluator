@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-import ast
 from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
-import re
 from typing import Any
 
 import structlog
 
 from agents.contracts import BPMNEvidence
+from agents.agent1_analyst.checklist.parser import read_checklist_file
+from agents.agent1_analyst.diagram.normalize import normalize_diagram
+from agents.agent1_analyst.diagram.reader import read_diagram_file
 
 
 @dataclass(frozen=True)
@@ -28,12 +29,16 @@ class Agent1Analyst:
 
     def run(self, payload: dict[str, Any]) -> list[BPMNEvidence]:
         """Runs the mapper from in-memory payload."""
-        diagram = self._normalize_diagram(payload.get("diagram", {}))
+        diagram = normalize_diagram(payload.get("diagram", {}))
         checklist = payload.get("checklist", {})
 
         self.logger.info("agent1.start")
         self._validate_diagram(diagram)
-        self.logger.info("agent1.diagram_loaded", elements=len(diagram.get("elements", [])), flows=len(diagram.get("flows", [])))
+        self.logger.info(
+            "agent1.diagram_loaded",
+            elements=len(diagram.get("elements", [])),
+            flows=len(diagram.get("flows", [])),
+        )
 
         criteria = self._extract_criteria(checklist)
         self.logger.info("agent1.criteria_loaded", total=len(criteria))
@@ -44,8 +49,8 @@ class Agent1Analyst:
 
     def run_from_files(self, diagram_path: str | Path, checklist_path: str | Path) -> list[BPMNEvidence]:
         """Runs the mapper by loading diagram/checklist files from disk."""
-        diagram = self._read_json_file(diagram_path)
-        checklist = self._read_checklist_file(checklist_path)
+        diagram = read_diagram_file(diagram_path)
+        checklist = read_checklist_file(checklist_path)
         return self.run({"diagram": diagram, "checklist": checklist})
 
     @staticmethod
@@ -53,219 +58,11 @@ class Agent1Analyst:
         return json.dumps([asdict(item) for item in evidences], ensure_ascii=False, indent=2)
 
     @staticmethod
-    def _read_json_file(file_path: str | Path) -> dict[str, Any]:
-        path = Path(file_path)
-        with path.open("r", encoding="utf-8") as file:
-            data = json.load(file)
-        if not isinstance(data, dict):
-            raise ValueError(f"JSON inválido em {path}: esperado objeto no topo.")
-        return data
-
-    @staticmethod
-    def _read_checklist_file(file_path: str | Path) -> dict[str, Any]:
-        path = Path(file_path)
-
-        if path.suffix.lower() == ".json":
-            return Agent1Analyst._read_json_file(path)
-
-        raw_text = path.read_text(encoding="utf-8").strip()
-        if not raw_text:
-            raise ValueError(f"Checklist vazio em {path}.")
-
-        parsed = Agent1Analyst._parse_tuple_list_checklist(raw_text)
-        return {"criteria": parsed}
-
-    @staticmethod
-    def _parse_tuple_list_checklist(raw_text: str) -> list[dict[str, Any]]:
-        try:
-            data = ast.literal_eval(raw_text)
-        except (ValueError, SyntaxError) as exc:
-            raise ValueError(
-                "Checklist TXT inválido: esperado formato de lista de tuplas "
-                "[(categoria, descricao), ...]."
-            ) from exc
-
-        if not isinstance(data, list):
-            raise ValueError("Checklist TXT inválido: esperado uma lista.")
-
-        counters: dict[str, int] = {}
-        criteria: list[dict[str, Any]] = []
-
-        for item in data:
-            if not isinstance(item, tuple) or len(item) != 2:
-                raise ValueError(
-                    "Checklist TXT inválido: cada item deve ser uma tupla (categoria, descricao)."
-                )
-
-            category_raw, description = item
-            category = str(category_raw).strip()
-            desc = str(description).strip()
-            if not category or not desc:
-                raise ValueError("Checklist TXT inválido: categoria e descrição não podem ser vazias.")
-
-            normalized_category = Agent1Analyst._normalize_category_label(category)
-            counters[normalized_category] = counters.get(normalized_category, 0) + 1
-            criterion_id = f"{normalized_category}_{counters[normalized_category]}"
-
-            criteria.append(
-                {
-                    "criterion_id": criterion_id,
-                    "category": normalized_category,
-                    "description": desc,
-                    "source_category": category,
-                }
-            )
-
-        return criteria
-
-    @staticmethod
-    def _normalize_category_label(raw_category: str) -> str:
-        category = raw_category.strip().lower()
-        category = re.sub(r"\(.*?\)", "", category).strip()
-
-        if "sintaxe" in category:
-            return "syntax"
-        if "semântica" in category or "semantica" in category:
-            return "semantics"
-        if "boas pr" in category:
-            return "best_practices"
-        if "modelagem alinhada" in category or "proposta" in category:
-            return "proposal"
-        if "legibilidade" in category:
-            return "readability"
-
-        sanitized = re.sub(r"[^a-z0-9]+", "_", category).strip("_")
-        return sanitized or "criteria"
-
-    @staticmethod
     def _validate_diagram(diagram: dict[str, Any]) -> None:
         if "elements" not in diagram or not isinstance(diagram.get("elements"), list):
             raise ValueError("Diagrama inválido: não foi possível identificar a lista de elementos.")
         if "flows" in diagram and not isinstance(diagram.get("flows"), list):
             raise ValueError("Diagrama inválido: campo 'flows' deve ser uma lista.")
-
-    @staticmethod
-    def _normalize_diagram(diagram: dict[str, Any]) -> dict[str, Any]:
-        if not isinstance(diagram, dict):
-            raise ValueError("Diagrama inválido: esperado objeto JSON.")
-
-        elements = Agent1Analyst._pick_first_list(
-            diagram,
-            keys=[
-                "elements",
-                "elemnts",
-                "elementos",
-                "nodes",
-                "activities",
-                "objects",
-                "bpmn_elements",
-                "items",
-            ],
-        )
-        flows = Agent1Analyst._pick_first_list(
-            diagram,
-            keys=[
-                "flows",
-                "sequenceFlows",
-                "sequence_flows",
-                "connections",
-                "edges",
-                "fluxos",
-                "links",
-            ],
-            default=[],
-        )
-
-        if elements is None and "diagram" in diagram and isinstance(diagram["diagram"], dict):
-            return Agent1Analyst._normalize_diagram(diagram["diagram"])
-
-        if elements is None:
-            elements = Agent1Analyst._find_elements_recursively(diagram)
-        if not flows:
-            flows = Agent1Analyst._find_flows_recursively(diagram)
-
-        normalized = dict(diagram)
-        if elements is not None:
-            normalized["elements"] = elements
-        if flows is not None:
-            normalized["flows"] = flows
-        return normalized
-
-    @staticmethod
-    def _pick_first_list(
-        data: dict[str, Any],
-        keys: list[str],
-        default: list[Any] | None = None,
-    ) -> list[dict[str, Any]] | list[Any] | None:
-        for key in keys:
-            value = data.get(key)
-            if isinstance(value, list):
-                return value
-        return default
-
-    @staticmethod
-    def _find_elements_recursively(data: Any) -> list[dict[str, Any]]:
-        candidates: list[dict[str, Any]] = []
-
-        def visit(node: Any) -> None:
-            if isinstance(node, dict):
-                if Agent1Analyst._looks_like_bpmn_element(node):
-                    candidates.append(node)
-                for value in node.values():
-                    visit(value)
-            elif isinstance(node, list):
-                for item in node:
-                    visit(item)
-
-        visit(data)
-
-        unique: list[dict[str, Any]] = []
-        seen: set[str] = set()
-        for item in candidates:
-            key = str(item.get("id") or id(item))
-            if key in seen:
-                continue
-            seen.add(key)
-            unique.append(item)
-        return unique
-
-    @staticmethod
-    def _find_flows_recursively(data: Any) -> list[dict[str, Any]]:
-        candidates: list[dict[str, Any]] = []
-
-        def visit(node: Any) -> None:
-            if isinstance(node, dict):
-                if Agent1Analyst._looks_like_flow(node):
-                    normalized = dict(node)
-                    if "source" not in normalized and "sourceRef" in normalized:
-                        normalized["source"] = normalized.get("sourceRef")
-                    if "target" not in normalized and "targetRef" in normalized:
-                        normalized["target"] = normalized.get("targetRef")
-                    candidates.append(normalized)
-                for value in node.values():
-                    visit(value)
-            elif isinstance(node, list):
-                for item in node:
-                    visit(item)
-
-        visit(data)
-        return candidates
-
-    @staticmethod
-    def _looks_like_bpmn_element(node: dict[str, Any]) -> bool:
-        node_type = node.get("type")
-        if not isinstance(node_type, str):
-            return False
-
-        normalized_type = node_type.strip()
-        if not normalized_type:
-            return False
-
-        return any(key in node for key in ("id", "name", "incoming", "outgoing"))
-
-    @staticmethod
-    def _looks_like_flow(node: dict[str, Any]) -> bool:
-        return ("source" in node and "target" in node) or ("sourceRef" in node and "targetRef" in node)
 
     def _extract_criteria(self, checklist: dict[str, Any]) -> list[Criterion]:
         normalized: list[Criterion] = []
@@ -538,3 +335,4 @@ class Agent1Analyst:
         if name:
             return f"{name} ({element_id})"
         return element_id
+
