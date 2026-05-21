@@ -8,6 +8,7 @@ class BPMNEvidence:
     status: str
     element: str
     observation: str | None = None
+    question: str | None = None
 
 
 @dataclass
@@ -19,4 +20,3 @@ class BPMNAssessment:
     confidence: float
     flag_review: bool
     plan_log: str | None = None
-

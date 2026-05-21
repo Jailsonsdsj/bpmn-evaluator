@@ -33,6 +33,7 @@ def test_agent1_maps_present_absent_and_incorrect() -> None:
     assert by_id["c1"].status == "present"
     assert by_id["c2"].status == "absent"
     assert by_id["c3"].status == "incorrect"
+    assert by_id["c1"].question == "Deve existir evento de início"
 
 
 def test_agent1_accepts_checklist_grouped_by_category() -> None:
@@ -151,6 +152,16 @@ def test_agent1_accepts_alternative_diagram_keys() -> None:
     assert evidences[0].status == "present"
 
 
+def test_agent1_default_to_absent_when_no_match() -> None:
+    diagram = {"elements": [], "flows": []}
+    checklist = {"criteria": [{"id": "c1", "category": "syntax", "description": "Critério não mapeado"}]}
+
+    evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
+
+    assert len(evidences) == 1
+    assert evidences[0].status == "absent"
+
+
 def test_agent1_finds_elements_in_nested_structure() -> None:
     diagram = {
         "model": {
@@ -170,6 +181,43 @@ def test_agent1_finds_elements_in_nested_structure() -> None:
     evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
 
     assert len(evidences) == 1
+    assert evidences[0].status == "present"
+
+
+def test_agent1_handles_lucidchart_shapes() -> None:
+    diagram = {
+        "pages": [
+            {
+                "items": {
+                    "shapes": [
+                        {"id": "s1", "class": "ProcessBlock", "textAreas": [{"label": "Text", "text": "INÍCIO"}]},
+                        {
+                            "id": "s2",
+                            "class": "DecisionBlock",
+                            "textAreas": [{"label": "Text", "text": "Decisão"}],
+                        },
+                    ],
+                    "lines": [
+                        {
+                            "id": "l1",
+                            "endpoint1": {"connectedTo": "s1"},
+                            "endpoint2": {"connectedTo": "s2"},
+                        }
+                    ],
+                }
+            }
+        ]
+    }
+    checklist = {
+        "criteria": [
+            {"id": "c1", "category": "syntax", "description": "O evento inicial foi definido?"},
+            {"id": "c2", "category": "syntax", "description": "Os desvios (Gateway) possuem mais de um fluxo?"},
+        ]
+    }
+
+    evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
+
+    assert len(evidences) == 2
     assert evidences[0].status == "present"
 
 

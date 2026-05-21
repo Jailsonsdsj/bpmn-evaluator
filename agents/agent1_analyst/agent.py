@@ -64,6 +64,22 @@ class Agent1Analyst:
         if "flows" in diagram and not isinstance(diagram.get("flows"), list):
             raise ValueError("Diagrama inválido: campo 'flows' deve ser uma lista.")
 
+    @staticmethod
+    def _build_evidence(
+        criterion: Criterion,
+        status: str,
+        element: str,
+        observation: str | None = None,
+    ) -> BPMNEvidence:
+        return BPMNEvidence(
+            criterion_id=criterion.criterion_id,
+            category=criterion.category,
+            status=status,
+            element=element,
+            observation=observation,
+            question=criterion.description,
+        )
+
     def _extract_criteria(self, checklist: dict[str, Any]) -> list[Criterion]:
         normalized: list[Criterion] = []
 
@@ -162,36 +178,27 @@ class Agent1Analyst:
 
         if not candidates:
             target = str(expected_name or expected_type or criterion.description)
-            return BPMNEvidence(
-                criterion_id=criterion.criterion_id,
-                category=criterion.category,
-                status="absent",
-                element=target,
-                observation=None,
-            )
+            return self._build_evidence(criterion, status="absent", element=target)
 
         if exact_occ is not None and len(candidates) != int(exact_occ):
-            return BPMNEvidence(
-                criterion_id=criterion.criterion_id,
-                category=criterion.category,
+            return self._build_evidence(
+                criterion,
                 status="incorrect",
                 element=self._element_ref(candidates[0]),
                 observation=f"Esperado exatamente {int(exact_occ)} ocorrência(s), encontrado {len(candidates)}.",
             )
 
         if min_occ is not None and len(candidates) < int(min_occ):
-            return BPMNEvidence(
-                criterion_id=criterion.criterion_id,
-                category=criterion.category,
+            return self._build_evidence(
+                criterion,
                 status="incorrect",
                 element=self._element_ref(candidates[0]),
                 observation=f"Esperado no mínimo {int(min_occ)} ocorrência(s), encontrado {len(candidates)}.",
             )
 
         if max_occ is not None and len(candidates) > int(max_occ):
-            return BPMNEvidence(
-                criterion_id=criterion.criterion_id,
-                category=criterion.category,
+            return self._build_evidence(
+                criterion,
                 status="incorrect",
                 element=self._element_ref(candidates[0]),
                 observation=f"Esperado no máximo {int(max_occ)} ocorrência(s), encontrado {len(candidates)}.",
@@ -199,9 +206,8 @@ class Agent1Analyst:
 
         connection_error = self._validate_connection_rules(candidates[0], raw)
         if connection_error:
-            return BPMNEvidence(
-                criterion_id=criterion.criterion_id,
-                category=criterion.category,
+            return self._build_evidence(
+                criterion,
                 status="incorrect",
                 element=self._element_ref(candidates[0]),
                 observation=connection_error,
@@ -210,20 +216,17 @@ class Agent1Analyst:
         if raw.get("require_named_flows") is True:
             unnamed_flow = next((flow for flow in flows if not str(flow.get("name", "")).strip()), None)
             if unnamed_flow:
-                return BPMNEvidence(
-                    criterion_id=criterion.criterion_id,
-                    category=criterion.category,
+                return self._build_evidence(
+                    criterion,
                     status="incorrect",
                     element=str(unnamed_flow.get("id", "sequenceFlow")),
                     observation="Fluxo de sequência sem nome.",
                 )
 
-        return BPMNEvidence(
-            criterion_id=criterion.criterion_id,
-            category=criterion.category,
+        return self._build_evidence(
+            criterion,
             status="present",
             element=self._element_ref(candidates[0]),
-            observation=None,
         )
 
     def _map_with_textual_heuristics(
@@ -239,10 +242,24 @@ class Agent1Analyst:
         tasks = [e for e in elements if str(e.get("type")) in {"task", "userTask", "serviceTask"}]
         gateways = [e for e in elements if str(e.get("type", "")).endswith("Gateway")]
 
-        if "início" in description or "inicio" in description or "start event" in description:
+        if (
+            "início" in description
+            or "inicio" in description
+            or "start event" in description
+            or "evento inicial" in description
+            or "evento de inicio" in description
+            or "evento de início" in description
+        ):
             return self._exists_result(criterion, start_events, "startEvent")
 
-        if "fim" in description or "end event" in description:
+        if (
+            "fim" in description
+            or "end event" in description
+            or "evento final" in description
+            or "evento de fim" in description
+            or "evento de término" in description
+            or "evento de termino" in description
+        ):
             return self._exists_result(criterion, end_events, "endEvent")
 
         if "gateway" in description:
@@ -256,28 +273,23 @@ class Agent1Analyst:
         ):
             unnamed_flow = next((flow for flow in flows if not str(flow.get("name", "")).strip()), None)
             if unnamed_flow:
-                return BPMNEvidence(
-                    criterion_id=criterion.criterion_id,
-                    category=criterion.category,
+                return self._build_evidence(
+                    criterion,
                     status="incorrect",
                     element=str(unnamed_flow.get("id", "sequenceFlow")),
                     observation="Fluxo de sequência sem nome.",
                 )
             first = flows[0] if flows else None
-            return BPMNEvidence(
-                criterion_id=criterion.criterion_id,
-                category=criterion.category,
+            return self._build_evidence(
+                criterion,
                 status="present" if first else "absent",
                 element=str(first.get("id")) if first else "sequenceFlow",
-                observation=None,
             )
 
-        return BPMNEvidence(
-            criterion_id=criterion.criterion_id,
-            category=criterion.category,
-            status="present",
+        return self._build_evidence(
+            criterion,
+            status="absent",
             element=criterion.description,
-            observation=None,
         )
 
     @staticmethod
@@ -313,19 +325,15 @@ class Agent1Analyst:
         expected_label: str,
     ) -> BPMNEvidence:
         if candidates:
-            return BPMNEvidence(
-                criterion_id=criterion.criterion_id,
-                category=criterion.category,
+            return Agent1Analyst._build_evidence(
+                criterion,
                 status="present",
                 element=Agent1Analyst._element_ref(candidates[0]),
-                observation=None,
             )
-        return BPMNEvidence(
-            criterion_id=criterion.criterion_id,
-            category=criterion.category,
+        return Agent1Analyst._build_evidence(
+            criterion,
             status="absent",
             element=expected_label,
-            observation=None,
         )
 
     @staticmethod
@@ -335,4 +343,3 @@ class Agent1Analyst:
         if name:
             return f"{name} ({element_id})"
         return element_id
-
