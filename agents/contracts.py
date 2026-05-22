@@ -6,6 +6,7 @@ class BPMNEvidence:
     criterion_id: str
     category: str
     status: str
+    value: float
     element: str
     observation: str | None = None
     question: str | None = None

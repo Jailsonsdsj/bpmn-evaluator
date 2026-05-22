@@ -34,6 +34,9 @@ def test_agent1_maps_present_absent_and_incorrect() -> None:
     assert by_id["c2"].status == "absent"
     assert by_id["c3"].status == "incorrect"
     assert by_id["c1"].question == "Deve existir evento de início"
+    assert by_id["c1"].value == 1.0
+    assert by_id["c2"].value == 0.0
+    assert by_id["c3"].value == 0.5
 
 
 def test_agent1_accepts_checklist_grouped_by_category() -> None:

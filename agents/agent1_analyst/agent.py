@@ -75,10 +75,20 @@ class Agent1Analyst:
             criterion_id=criterion.criterion_id,
             category=criterion.category,
             status=status,
+            value=Agent1Analyst._status_value(status),
             element=element,
             observation=observation,
             question=criterion.description,
         )
+
+    @staticmethod
+    def _status_value(status: str) -> float:
+        normalized = status.lower()
+        if normalized == "present":
+            return 1.0
+        if normalized == "incorrect":
+            return 0.5
+        return 0.0
 
     def _extract_criteria(self, checklist: dict[str, Any]) -> list[Criterion]:
         normalized: list[Criterion] = []
