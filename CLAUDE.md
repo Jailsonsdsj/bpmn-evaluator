@@ -84,7 +84,7 @@ The checklist CSV is an input to the pipeline, consumed by Agent 1 and Agent 3. 
 | Categoria | Category name + global weight (e.g. "sintaxe 30%") |
 | Itens avaliados | The criterion phrased as a question |
 | Feedback | Pre-written sentence describing the error when the criterion fails |
-| Pontuação | Penalty value lost if the criterion is not met |
+| Pontuação geral | Penalty value lost if the criterion is not met |
 
 Categories and weights: syntax 30%, proposal 20%, semantics 20%, best practices 20%, readability 10%. Total = 10.
 
@@ -280,15 +280,15 @@ Never hardcode the API key. Always load via `python-dotenv`.
 pip install -r requirements.txt
 
 # Run pipeline on a diagram
-python main.py --diagram evaluation/dataset/diagram_001.json \
-               --checklist evaluation/dataset/checklist.csv \
+python main.py --diagram "evaluation/dataset/Diagrama.json" \
+               --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
                --output evaluation/results/
 
 # Run with Docker (recommended)
 docker compose up
 docker compose run pipeline python main.py \
-  --diagram /data/diagram_001.json \
-  --checklist /data/checklist.csv \
+  --diagram "/data/Diagrama.json" \
+  --checklist "/data/Checklist completo - Modelagem 1 - Básico.csv" \
   --output /output/
 
 # Run tests
@@ -328,15 +328,13 @@ Scopes: `agent1`, `agent2`, `agent3`, `pipeline`, `eval`, `docker`, `paper`
 
 ## Evaluation dataset
 
-5 BPMN diagrams from the historical corpus of the BPM course (2022.2–2024.2), anonymized:
+BPMN diagrams from the historical corpus of the BPM course (2022.2–2024.2), anonymized.
+Currently 2 diagrams are in the repository; more will be added as curation progresses.
 
-| ID | Complexity | Flow elements | Ground truth |
+| File | Complexity | Source format | Ground truth |
 |----|-----------|---------------|--------------|
-| diagram_001 | Simple | ≤ 5 | Original human evaluation |
-| diagram_002 | Simple | ≤ 5 | Original human evaluation |
-| diagram_003 | Medium | 6–15 | Original human evaluation |
-| diagram_004 | Medium | 6–15 | Original human evaluation |
-| diagram_005 | Complex | > 15 | Original human evaluation |
+| Diagrama.json | Medium | LucidChart export (normalized by Agent 1) | Original human evaluation |
+| Diagrama2.json | Medium | LucidChart export (normalized by Agent 1) | Original human evaluation |
 
 **Rule:** never modify files in `evaluation/dataset/`. Never add personally identifiable data.
 

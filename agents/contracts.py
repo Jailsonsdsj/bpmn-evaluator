@@ -16,7 +16,10 @@ class BPMNEvidence:
 class BPMNAssessment:
     criterion_id: str
     category: str
-    penalty: float
+    category_weight: float
+    status: str
+    checklist_penalty: float
+    applied_penalty: float
     justification: str
     confidence: float
     flag_review: bool
