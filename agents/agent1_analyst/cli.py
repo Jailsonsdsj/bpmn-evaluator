@@ -76,6 +76,9 @@ def _run_gui() -> int:
     diagram_paths: list[str] = []
     checklist_path: str | None = None
 
+    project_root = Path(__file__).resolve().parents[2]
+    dataset_dir = str(project_root / "evaluation" / "dataset")
+
     root = tk.Tk()
     root.title("Agent 1 — Criteria Mapper")
     root.geometry("560x320")
@@ -104,6 +107,7 @@ def _run_gui() -> int:
     def add_diagrams() -> None:
         paths = filedialog.askopenfilenames(
             title="Selecione um ou mais diagramas BPMN (JSON, PDF ou imagem)",
+            initialdir=dataset_dir,
             filetypes=[
                 ("Diagramas", "*.json *.pdf *.png *.jpg *.jpeg"),
                 ("JSON", "*.json"),
@@ -121,6 +125,7 @@ def _run_gui() -> int:
         nonlocal checklist_path
         path = filedialog.askopenfilename(
             title="Selecione o checklist (.txt, .csv ou .json)",
+            initialdir=dataset_dir,
             filetypes=[
                 ("Checklist", "*.txt *.csv *.json"),
                 ("CSV", "*.csv"),
@@ -141,10 +146,7 @@ def _run_gui() -> int:
             messagebox.showerror("Erro", "Adicione o checklist.")
             return
 
-        output_dir = filedialog.askdirectory(title="Selecione a pasta para salvar BPMNEvidence.json")
-        if not output_dir:
-            messagebox.showinfo("Cancelado", "Nenhuma pasta de saída selecionada.")
-            return
+        output_dir = str(project_root / "evaluation" / "results")
 
         try:
             multiple = len(diagram_paths) > 1
