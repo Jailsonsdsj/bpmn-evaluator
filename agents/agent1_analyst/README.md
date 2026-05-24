@@ -15,6 +15,14 @@ Outputs a list of `BPMNEvidence` objects — no judgment, only evidence mapping.
 
 **Observação:** para diagramas em imagem ou PDF, o Agent 1 usa o modelo configurado via `ANTHROPIC_API_KEY` e `MODEL_NAME` no `.env`.
 
+### Campo `value`
+
+O `BPMNEvidence` inclui `value` (0–1), calculado a partir do status:
+
+- `present` → `1.0`
+- `incorrect` → `0.5`
+- `absent` → `0.0`
+
 ### Exemplo rápido
 
 ```python

@@ -42,8 +42,6 @@ Este projeto implementa um **protótipo MVC** do núcleo técnico da proposta de
 
 **Saída:** `BPMNEvidence` — lista de `{criterio_id, categoria, status, elemento, observacao}`.
 
-------
-
 ### Agente 2: Avaliador Crítico
 
 **Entrada:** `BPMNEvidence` do Agente 1.
@@ -57,15 +55,11 @@ Este projeto implementa um **protótipo MVC** do núcleo técnico da proposta de
 
 **Saída:** `BPMNAssessment` — lista de `{criterio_id, categoria, penalizacao, justificativa, confianca, flag_revisar}` + nota parcial por categoria.
 
-------
-
 ### Opcional: revisão Humana (Human-in-the-Loop simplificado)
 
 O Agente 2 gera um arquivo `assessment_review.json`. O avaliador humano abre o arquivo, edita os campos que discorda (penalização, justificativa) e salva. O pipeline lê o arquivo editado e passa ao Agente 3.
 
 É simples e manual, mas preserva o conceito central da pesquisa de mestrado: a intervenção humana acontece entre a avaliação automatizada e a geração do feedback, e pode ser rastreada pela diferença entre o `BPMNAssessment` original e o arquivo editado.
-
-------
 
 ### Agente 3: Gerador de Feedback Formativo
 
