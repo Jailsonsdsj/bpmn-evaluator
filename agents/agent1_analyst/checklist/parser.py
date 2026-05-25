@@ -46,11 +46,23 @@ def parse_csv_checklist(path: Path) -> list[dict[str, Any]]:
     category_idx = None
     item_idx = None
     criteria_idx = None
+    score_general_idx = None
+    score_equiv_idx = None
     for idx, row in enumerate(rows):
         normalized = [_normalize_header_cell(cell) for cell in row]
         category_idx = _find_header_index(normalized, ["categoria"])
         item_idx = _find_header_index(normalized, ["itens avaliados"])
         criteria_idx = _find_header_index(normalized, ["criterios avaliados", "critérios avaliados"])
+        score_general_idx = _find_header_index(normalized, ["pontuação geral", "pontuacao geral"])
+        score_equiv_idx = _find_header_index(
+            normalized,
+            [
+                "pontuação equivalente - utilizar esta coluna para descontar a nota",
+                "pontuacao equivalente - utilizar esta coluna para descontar a nota",
+                "pontuação equivalente",
+                "pontuacao equivalente",
+            ],
+        )
         if category_idx is not None and item_idx is not None:
             header_idx = idx
             break
@@ -83,6 +95,10 @@ def parse_csv_checklist(path: Path) -> list[dict[str, Any]]:
         counters[normalized_category] = counters.get(normalized_category, 0) + 1
         criterion_id = f"{normalized_category}_{counters[normalized_category]}"
 
+        score_equiv = _parse_score(_get_cell(row, score_equiv_idx))
+        score_general = _parse_score(_get_cell(row, score_general_idx))
+        score = _select_score(score_equiv, score_general)
+
         criteria.append(
             {
                 "criterion_id": criterion_id,
@@ -90,6 +106,7 @@ def parse_csv_checklist(path: Path) -> list[dict[str, Any]]:
                 "description": item_cell,
                 "source_category": last_category,
                 "source_row": row_idx,
+                "score": score,
             }
         )
 
@@ -186,6 +203,12 @@ def _find_header_index(normalized: list[str], candidates: list[str]) -> int | No
     return None
 
 
+def _get_cell(row: list[str], index: int | None) -> str:
+    if index is None or len(row) <= index:
+        return ""
+    return row[index].strip()
+
+
 def _fallback_item_cell(row: list[str], criteria_idx: int | None) -> str:
     if criteria_idx is not None and len(row) > criteria_idx:
         candidate = row[criteria_idx].strip()
@@ -205,3 +228,32 @@ def _fallback_item_cell(row: list[str], criteria_idx: int | None) -> str:
             return candidate
 
     return ""
+
+
+def _parse_score(value: str) -> float | None:
+    if not value:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+
+    cleaned = str(value).strip()
+    if not cleaned:
+        return None
+
+    if "," in cleaned and "." in cleaned:
+        cleaned = cleaned.replace(".", "").replace(",", ".")
+    else:
+        cleaned = cleaned.replace(",", ".")
+
+    try:
+        return float(cleaned)
+    except ValueError:
+        return None
+
+
+def _select_score(score_equiv: float | None, score_general: float | None) -> float | None:
+    if score_equiv is not None and score_equiv != 0:
+        return score_equiv
+    if score_general is not None:
+        return score_general
+    return score_equiv

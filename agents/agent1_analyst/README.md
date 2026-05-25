@@ -1,7 +1,7 @@
 # Agent 1 — Criteria Mapper
 
 Receives the BPMN diagram JSON and the evaluation checklist.
-For each criterion, maps whether the corresponding element is present, absent, or incorrect.
+For each criterion, maps whether the corresponding element is cumprido, nao_cumprido, or nao_aplicavel.
 Outputs a list of `BPMNEvidence` objects — no judgment, only evidence mapping.
 
 ## Implementação
@@ -17,11 +17,15 @@ Outputs a list of `BPMNEvidence` objects — no judgment, only evidence mapping.
 
 ### Campo `value`
 
-O `BPMNEvidence` inclui `value` (0–1), calculado a partir do status:
+O `BPMNEvidence` inclui `value` (0–1) com base na pontuação do checklist:
 
-- `present` → `1.0`
-- `incorrect` → `0.5`
-- `absent` → `0.0`
+- Quando o checklist fornece pontuação, `value = pontuação` se `cumprido` e `value = 0.0` se `nao_cumprido/nao_aplicavel`.
+- Se não houver pontuação no checklist, o fallback é: `cumprido = 1.0`, `nao_cumprido = 0.0`, `nao_aplicavel = 0.0`.
+
+### Campo `observation`
+
+Quando não há observação específica, o Agent 1 gera uma mensagem padrão baseada no status e na pontuação.
+Para `nao_cumprido/nao_aplicavel`, a mensagem inclui o motivo quando disponível.
 
 ### Exemplo rápido
 

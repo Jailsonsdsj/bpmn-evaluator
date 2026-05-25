@@ -71,24 +71,89 @@ class Agent1Analyst:
         element: str,
         observation: str | None = None,
     ) -> BPMNEvidence:
+        value = Agent1Analyst._value_for_status(status, criterion.raw)
+        observation_text = Agent1Analyst._format_observation(status, value, observation)
         return BPMNEvidence(
             criterion_id=criterion.criterion_id,
             category=criterion.category,
             status=status,
-            value=Agent1Analyst._status_value(status),
+            value=value,
             element=element,
-            observation=observation,
+            observation=observation_text,
             question=criterion.description,
         )
 
     @staticmethod
+    def _value_for_status(status: str, raw: dict[str, Any]) -> float:
+        score = Agent1Analyst._criterion_score(raw)
+        if score is None:
+            return Agent1Analyst._status_value(status)
+
+        normalized = status.lower()
+        if normalized == "cumprido":
+            return score
+        return 0.0
+
+    @staticmethod
+    def _format_observation(status: str, value: float | None, reason: str | None) -> str:
+        normalized = status.lower()
+        if normalized == "cumprido":
+            base = "Critério atendido"
+        elif normalized == "nao_cumprido":
+            base = "Critério não atendido"
+        else:
+            base = "Critério não aplicável"
+
+        parts = [base]
+        if reason:
+            clean_reason = reason.strip().rstrip(".")
+            parts.append(f"Motivo: {clean_reason}")
+        if value is not None:
+            parts.append(f"Pontuação: {value}")
+        return ". ".join(parts) + "."
+
+    @staticmethod
     def _status_value(status: str) -> float:
         normalized = status.lower()
-        if normalized == "present":
+        if normalized == "cumprido":
             return 1.0
-        if normalized == "incorrect":
-            return 0.5
         return 0.0
+
+    @staticmethod
+    def _criterion_score(raw: dict[str, Any]) -> float | None:
+        for key in (
+            "score",
+            "pontuacao",
+            "pontuação",
+            "pontuacao_geral",
+            "pontuação geral",
+            "penalty",
+            "value",
+        ):
+            if key in raw:
+                return Agent1Analyst._parse_score(raw.get(key))
+        return None
+
+    @staticmethod
+    def _parse_score(value: Any) -> float | None:
+        if value is None:
+            return None
+        if isinstance(value, (int, float)):
+            return float(value)
+
+        cleaned = str(value).strip()
+        if not cleaned:
+            return None
+
+        if "," in cleaned and "." in cleaned:
+            cleaned = cleaned.replace(".", "").replace(",", ".")
+        else:
+            cleaned = cleaned.replace(",", ".")
+
+        try:
+            return float(cleaned)
+        except ValueError:
+            return None
 
     def _extract_criteria(self, checklist: dict[str, Any]) -> list[Criterion]:
         normalized: list[Criterion] = []
@@ -148,6 +213,15 @@ class Agent1Analyst:
         elements = diagram.get("elements", [])
         flows = diagram.get("flows", [])
 
+        not_applicable_reason = self._not_applicable_reason(elements, flows, criterion)
+        if not_applicable_reason:
+            return self._build_evidence(
+                criterion,
+                status="nao_aplicavel",
+                element=criterion.description,
+                observation=not_applicable_reason,
+            )
+
         explicit_mapping = self._map_with_explicit_fields(
             elements=elements,
             flows=flows,
@@ -188,12 +262,17 @@ class Agent1Analyst:
 
         if not candidates:
             target = str(expected_name or expected_type or criterion.description)
-            return self._build_evidence(criterion, status="absent", element=target)
+            return self._build_evidence(
+                criterion,
+                status="nao_cumprido",
+                element=target,
+                observation=f"Elemento esperado não encontrado: {target}.",
+            )
 
         if exact_occ is not None and len(candidates) != int(exact_occ):
             return self._build_evidence(
                 criterion,
-                status="incorrect",
+                status="nao_cumprido",
                 element=self._element_ref(candidates[0]),
                 observation=f"Esperado exatamente {int(exact_occ)} ocorrência(s), encontrado {len(candidates)}.",
             )
@@ -201,7 +280,7 @@ class Agent1Analyst:
         if min_occ is not None and len(candidates) < int(min_occ):
             return self._build_evidence(
                 criterion,
-                status="incorrect",
+                status="nao_cumprido",
                 element=self._element_ref(candidates[0]),
                 observation=f"Esperado no mínimo {int(min_occ)} ocorrência(s), encontrado {len(candidates)}.",
             )
@@ -209,7 +288,7 @@ class Agent1Analyst:
         if max_occ is not None and len(candidates) > int(max_occ):
             return self._build_evidence(
                 criterion,
-                status="incorrect",
+                status="nao_cumprido",
                 element=self._element_ref(candidates[0]),
                 observation=f"Esperado no máximo {int(max_occ)} ocorrência(s), encontrado {len(candidates)}.",
             )
@@ -218,7 +297,7 @@ class Agent1Analyst:
         if connection_error:
             return self._build_evidence(
                 criterion,
-                status="incorrect",
+                status="nao_cumprido",
                 element=self._element_ref(candidates[0]),
                 observation=connection_error,
             )
@@ -228,14 +307,14 @@ class Agent1Analyst:
             if unnamed_flow:
                 return self._build_evidence(
                     criterion,
-                    status="incorrect",
+                    status="nao_cumprido",
                     element=str(unnamed_flow.get("id", "sequenceFlow")),
                     observation="Fluxo de sequência sem nome.",
                 )
 
         return self._build_evidence(
             criterion,
-            status="present",
+            status="cumprido",
             element=self._element_ref(candidates[0]),
         )
 
@@ -285,21 +364,23 @@ class Agent1Analyst:
             if unnamed_flow:
                 return self._build_evidence(
                     criterion,
-                    status="incorrect",
+                    status="nao_cumprido",
                     element=str(unnamed_flow.get("id", "sequenceFlow")),
                     observation="Fluxo de sequência sem nome.",
                 )
             first = flows[0] if flows else None
             return self._build_evidence(
                 criterion,
-                status="present" if first else "absent",
+                status="cumprido" if first else "nao_cumprido",
                 element=str(first.get("id")) if first else "sequenceFlow",
+                observation=None if first else "Nenhum fluxo de sequência encontrado.",
             )
 
         return self._build_evidence(
             criterion,
-            status="absent",
+            status="nao_cumprido",
             element=criterion.description,
+            observation="Não foi possível identificar evidências para o critério no diagrama.",
         )
 
     @staticmethod
@@ -337,13 +418,14 @@ class Agent1Analyst:
         if candidates:
             return Agent1Analyst._build_evidence(
                 criterion,
-                status="present",
+                status="cumprido",
                 element=Agent1Analyst._element_ref(candidates[0]),
             )
         return Agent1Analyst._build_evidence(
             criterion,
-            status="absent",
+            status="nao_cumprido",
             element=expected_label,
+            observation=f"Elemento esperado não encontrado: {expected_label}.",
         )
 
     @staticmethod
@@ -353,3 +435,41 @@ class Agent1Analyst:
         if name:
             return f"{name} ({element_id})"
         return element_id
+    @staticmethod
+    def _not_applicable_reason(
+        elements: list[dict[str, Any]],
+        flows: list[dict[str, Any]],
+        criterion: Criterion,
+    ) -> str | None:
+        raw = criterion.raw
+        if raw.get("nao_aplicavel") is True or raw.get("not_applicable") is True:
+            return "Marcado como não aplicável no checklist."
+        if raw.get("aplicavel") is False or raw.get("applicable") is False:
+            return "Marcado como não aplicável no checklist."
+
+        description = criterion.description.lower()
+        has_pool = any(str(element.get("type")) == "pool" for element in elements)
+        has_lane = any(str(element.get("type")) == "lane" for element in elements)
+        has_subprocess = any(str(element.get("type")) == "subProcess" for element in elements)
+        has_message_flow = any(
+            str(flow.get("type", "")).lower() in {"messageflow", "message_flow"} for flow in flows
+        )
+
+        if (
+            "message flow" in description
+            or "messageflow" in description
+            or "mensagem" in description
+        ) and not (has_message_flow or has_pool or has_lane):
+            return "Diagrama não possui pools/raias ou fluxos de mensagem."
+        if "pool" in description and not has_pool:
+            return "Diagrama não possui pool."
+        if ("lane" in description or "raia" in description) and not has_lane:
+            return "Diagrama não possui raia."
+        if (
+            "subprocess" in description
+            or "sub-processo" in description
+            or "subprocesso" in description
+        ) and not has_subprocess:
+            return "Diagrama não possui subprocesso."
+
+        return None
