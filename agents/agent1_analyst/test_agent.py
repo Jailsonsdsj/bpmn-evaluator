@@ -30,13 +30,13 @@ def test_agent1_maps_present_absent_and_incorrect() -> None:
     evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
     by_id = {item.criterion_id: item for item in evidences}
 
-    assert by_id["c1"].status == "present"
-    assert by_id["c2"].status == "absent"
-    assert by_id["c3"].status == "incorrect"
+    assert by_id["c1"].status == "cumprido"
+    assert by_id["c2"].status == "nao_cumprido"
+    assert by_id["c3"].status == "nao_cumprido"
     assert by_id["c1"].question == "Deve existir evento de início"
     assert by_id["c1"].value == 1.0
     assert by_id["c2"].value == 0.0
-    assert by_id["c3"].value == 0.5
+    assert by_id["c3"].value == 0.0
 
 
 def test_agent1_accepts_checklist_grouped_by_category() -> None:
@@ -50,7 +50,7 @@ def test_agent1_accepts_checklist_grouped_by_category() -> None:
 
     assert len(evidences) == 2
     assert {e.category for e in evidences} == {"syntax", "semantics"}
-    assert all(e.status == "absent" for e in evidences)
+    assert all(e.status == "nao_cumprido" for e in evidences)
 
 
 def test_agent1_accepts_txt_tuple_checklist(tmp_path: Path) -> None:
@@ -110,6 +110,33 @@ Semântica 20%,Todas as tarefas possuem fluxo de saída?,Sim
     assert evidences[2].category == "semantics"
 
 
+def test_agent1_csv_uses_score_value(tmp_path: Path) -> None:
+    diagram_path = tmp_path / "diagram.json"
+    checklist_path = tmp_path / "checklist.csv"
+
+    diagram_path.write_text(
+        """{
+  "id": "diagram_001",
+  "elements": [{"id":"e1","type":"startEvent","name":"Start","outgoing":["f1"]}],
+  "flows": [{"id":"f1","source":"e1","target":"e1","name":"loop"}]
+}""",
+        encoding="utf-8",
+    )
+    checklist_path.write_text(
+        """,,
+Categoria,Itens avaliados,Pontuação geral
+sintaxe 30%,O evento inicial foi definido?,"0,2"
+""",
+        encoding="utf-8",
+    )
+
+    evidences = Agent1Analyst().run_from_files(diagram_path, checklist_path)
+
+    assert len(evidences) == 1
+    assert evidences[0].status == "cumprido"
+    assert evidences[0].value == 0.2
+
+
 def test_agent1_csv_fallback_criteria_column(tmp_path: Path) -> None:
     diagram_path = tmp_path / "diagram.json"
     checklist_path = tmp_path / "checklist.csv"
@@ -152,7 +179,7 @@ def test_agent1_accepts_alternative_diagram_keys() -> None:
     evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
 
     assert len(evidences) == 1
-    assert evidences[0].status == "present"
+    assert evidences[0].status == "cumprido"
 
 
 def test_agent1_default_to_absent_when_no_match() -> None:
@@ -162,7 +189,7 @@ def test_agent1_default_to_absent_when_no_match() -> None:
     evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
 
     assert len(evidences) == 1
-    assert evidences[0].status == "absent"
+    assert evidences[0].status == "nao_cumprido"
 
 
 def test_agent1_finds_elements_in_nested_structure() -> None:
@@ -184,7 +211,7 @@ def test_agent1_finds_elements_in_nested_structure() -> None:
     evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
 
     assert len(evidences) == 1
-    assert evidences[0].status == "present"
+    assert evidences[0].status == "cumprido"
 
 
 def test_agent1_handles_lucidchart_shapes() -> None:
@@ -221,7 +248,7 @@ def test_agent1_handles_lucidchart_shapes() -> None:
     evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
 
     assert len(evidences) == 2
-    assert evidences[0].status == "present"
+    assert evidences[0].status == "cumprido"
 
 
 def test_agent1_image_requires_api_key(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -269,3 +296,14 @@ def test_agent1_pdf_requires_api_key(tmp_path: Path, monkeypatch: pytest.MonkeyP
 
     with pytest.raises(ValueError, match="ANTHROPIC_API_KEY ausente"):
         Agent1Analyst().run_from_files(diagram_path, checklist_path)
+def test_agent1_marks_not_applicable_for_pool_criteria_without_pools() -> None:
+    diagram = {
+        "elements": [{"id": "e1", "type": "startEvent", "name": "Start", "outgoing": []}],
+        "flows": [],
+    }
+    checklist = {"criteria": [{"id": "c1", "category": "syntax", "description": "Critério de pool único"}]}
+
+    evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
+
+    assert evidences[0].status == "nao_aplicavel"
+    assert evidences[0].value == 0.0
