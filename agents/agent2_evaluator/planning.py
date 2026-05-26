@@ -3,7 +3,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-import anthropic
+from langchain_anthropic import ChatAnthropic
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+from langchain_core.runnables import RunnableConfig
 from dotenv import load_dotenv
 
 from agents.contracts import BPMNEvidence
@@ -33,15 +36,21 @@ def generate_analysis_plan(evidence_list: list[BPMNEvidence]) -> str:
     api_key = os.getenv("ANTHROPIC_API_KEY")
     model = os.getenv("MODEL_NAME", "claude-opus-4-7")
 
-    client = anthropic.Anthropic(api_key=api_key)
+    if api_key:
+        client = ChatAnthropic(model_name=model, timeout=None, stop=[])
+    else:
+        client = ChatGoogleGenerativeAI(model=os.getenv("MODEL_NAME", "").strip(), temperature=0.7)
 
     summary = _build_evidence_summary(evidence_list)
 
-    response = client.messages.create(
-        model=model,
-        max_tokens=1024,
-        system=_SYSTEM_PROMPT,
-        messages=[
+    response = client.with_config(max_tokens=1024).invoke(
+        input=[
+            {
+                "role": "system",
+                "content": (
+                    _SYSTEM_PROMPT
+                ),
+            },
             {
                 "role": "user",
                 "content": (
@@ -53,8 +62,9 @@ def generate_analysis_plan(evidence_list: list[BPMNEvidence]) -> str:
             }
         ],
     )
+    print("Called invoke1")
 
-    return next(block.text for block in response.content if block.type == "text")
+    return StrOutputParser().invoke(response)
 
 
 def _build_evidence_summary(evidence_list: list[BPMNEvidence]) -> str:
