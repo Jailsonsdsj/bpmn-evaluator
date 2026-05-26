@@ -85,16 +85,45 @@ The pipeline will pause at the Human Review step and prompt you to edit `assessm
 ## Running with Docker
 
 ```bash
-docker compose up
+docker compose -f docker/docker-compose.yml run --rm pipeline
 ```
 
-Or to run a single diagram:
+The pipeline container runs the command after `#All` in `commands.txt`.
+Update that line with the diagram/checklist/enunciado/assessment paths you want to run.
+
+When you click **Run** on the image in Docker Desktop, it also executes the same `#All` command from `commands.txt`.
+
+**Required files (must exist inside the repo):**
+
+- Diagram: e.g. `evaluation/dataset/Resolucao1.json`
+- Checklist: e.g. `evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv`
+- Enunciado: e.g. `evaluation/dataset/Enunciado.txt` (create this file if you don't have one yet)
+
+If any path in the `#All` command points to a missing file, the pipeline will fail with `FileNotFoundError`.
+
+Run Agent 1 only:
 
 ```bash
-docker compose run pipeline python main.py \
-  --diagram /data/diagram_001.json \
-  --checklist /data/checklist.json \
-  --output /output/
+docker compose -f docker/docker-compose.yml run --rm app -m agents.agent1_analyst \
+  --diagram evaluation/dataset/diagram_001.json \
+  --checklist evaluation/dataset/checklist.json \
+  --output evaluation/results
+```
+
+Run Agent 2 (uses the default paths inside `__main__.py`):
+
+```bash
+docker compose -f docker/docker-compose.yml run --rm app -m agents.agent2_evaluator
+```
+
+Run Agent 3 (requires enunciado + assessment):
+
+```bash
+docker compose -f docker/docker-compose.yml run --rm app -m agents.agent3_feedback \
+  --diagram evaluation/dataset/diagram_001.json \
+  --enunciado evaluation/dataset/Instruções.txt \
+  --assessment evaluation/results/BPMNAssessment.json \
+  --output evaluation/results
 ```
 
 ---

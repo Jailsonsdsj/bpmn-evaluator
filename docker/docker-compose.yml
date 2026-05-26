@@ -1,0 +1,28 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    env_file:
+      - ../.env
+    volumes:
+      - ../evaluation:/app/evaluation
+      - ../mocks:/app/mocks
+    entrypoint: ["python"]
+    command: ["-m", "agents.agent1_analyst", "--help"]
+    stdin_open: true
+    tty: true
+
+  pipeline:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    env_file:
+      - ../.env
+    volumes:
+      - ../evaluation:/app/evaluation
+      - ../mocks:/app/mocks
+    stdin_open: true
+    tty: true
