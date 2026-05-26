@@ -8,7 +8,10 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-import anthropic
+from langchain_anthropic import ChatAnthropic
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+from langchain_core.runnables import RunnableConfig
 import structlog
 from dotenv import load_dotenv
 
@@ -66,7 +69,7 @@ def evaluate_once(
     evidence_list: list[BPMNEvidence],
     checklist: dict[str, dict[str, Any]],
     plan: str,
-    client: anthropic.Anthropic | None = None,
+    client: ChatAnthropic | ChatGoogleGenerativeAI | None = None,
     model: str | None = None,
 ) -> list[BPMNAssessment]:
     """Single-pass evaluation: validate each Agent 1 finding with one LLM call.
@@ -78,10 +81,14 @@ def evaluate_once(
     if not evidence_list:
         return []
 
-    if client is None:
-        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     if model is None:
         model = os.getenv("MODEL_NAME", "claude-opus-4-7")
+    if client is None:
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if api_key:
+            client = ChatAnthropic(model_name=model, timeout=None, stop=[])
+        else:
+            client = ChatGoogleGenerativeAI(model=os.getenv("MODEL_NAME", "").strip(), temperature=0.7)
     threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
     logger = structlog.get_logger("evaluate_once")
 
@@ -127,6 +134,8 @@ def evaluate_once(
                 confidence=confidence,
                 flag_review=confidence < threshold,
                 plan_log=plan if idx == 0 else None,
+                element=evidence_list[idx].element,
+                question=evidence_list[idx].question
             )
         )
 
@@ -146,7 +155,7 @@ def _reflect_loop(
     evidence_list: list[BPMNEvidence],
     checklist: dict[str, dict[str, Any]],
     plan: str,
-    client: anthropic.Anthropic,
+    client: ChatAnthropic,
     model: str,
     threshold: float,
     max_iterations: int,
@@ -225,7 +234,7 @@ def _critique_and_merge(
     assessments: list[BPMNAssessment],
     weak: list[BPMNAssessment],
     evidence_by_id: dict[str, BPMNEvidence],
-    client: anthropic.Anthropic,
+    client: ChatAnthropic,
     model: str,
     threshold: float,
 ) -> list[str]:
@@ -297,7 +306,7 @@ def _avg_confidence(assessments: list[BPMNAssessment]) -> float:
 # ---------------------------------------------------------------------------
 
 def _call_llm_json(
-    client: anthropic.Anthropic,
+    client: ChatAnthropic | ChatGoogleGenerativeAI,
     model: str,
     system: str,
     messages: list[dict[str, Any]],
@@ -306,14 +315,11 @@ def _call_llm_json(
 ) -> list[dict[str, Any]]:
     """Call the LLM and parse the JSON response. Retries once on parse failure."""
     for attempt in range(2):
-        response = client.messages.create(
-            model=model,
-            max_tokens=4096,
-            system=system,
-            messages=messages,
+        response = client.with_config(max_tokens=4096).invoke(
+            input=messages,
         )
-        raw = next(b.text for b in response.content if b.type == "text")
-        results = _parse_json_response(raw)
+        print("Called invoke2")
+        results = JsonOutputParser().invoke(response)
         if results:
             if attempt > 0:
                 logger.info("llm.json_retry_success", context=context)
@@ -322,7 +328,7 @@ def _call_llm_json(
             "llm.invalid_json",
             attempt=attempt + 1,
             context=context,
-            preview=raw[:200],
+            preview=str(results)[:200],
         )
 
     logger.error("llm.json_parse_failed_after_retry", context=context)
@@ -474,7 +480,10 @@ class Agent2Evaluator:
         model = os.getenv("MODEL_NAME", "claude-opus-4-7")
         threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
         max_iterations = int(os.getenv("MAX_ITERATIONS", "3"))
-        client = anthropic.Anthropic(api_key=api_key)
+        if api_key:
+            client = ChatAnthropic(model_name=model, timeout=None, stop=[])
+        else:
+            client = ChatGoogleGenerativeAI(model=os.getenv("MODEL_NAME", "").strip(), temperature=0.7)
 
         self.logger.info(
             "agent2.start",
