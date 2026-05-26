@@ -24,5 +24,6 @@ services:
     volumes:
       - ../evaluation:/app/evaluation
       - ../mocks:/app/mocks
+    entrypoint: ""
     stdin_open: true
     tty: true
