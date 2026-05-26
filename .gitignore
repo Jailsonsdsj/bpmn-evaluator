@@ -1,7 +1,16 @@
 .DS_Store
-.env
+.env*
 __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
 venv/
+evaluation/dataset
+evaluation/results
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+
+out*
