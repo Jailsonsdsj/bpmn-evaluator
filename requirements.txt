@@ -3,3 +3,7 @@ pymupdf>=1.24
 python-dotenv
 structlog
 pytest
+langchain
+langchain-anthropic
+langchain-google-genai
+

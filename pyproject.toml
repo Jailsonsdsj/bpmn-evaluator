@@ -12,6 +12,9 @@ dependencies = [
     "python-dotenv",
     "structlog",
     "pytest",
+    "langchain",
+    "langchain-anthropic",
+    "langchain-google-genai",
 ]
 
 [tool.pytest.ini_options]

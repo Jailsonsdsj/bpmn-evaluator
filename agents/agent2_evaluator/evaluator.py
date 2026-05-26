@@ -112,6 +112,8 @@ def evaluate_once(
         checklist_entry = checklist_entry or {}
 
         llm_entry = llm_by_id.get(cid, {})
+        checklist_penalty = 1.0 - evidence.value # Aplica penalidade
+        category_weight = float(checklist_entry.get("category_weight", 0.0))
         checklist_penalty = evidence.value
         category_weight = float(checklist_entry.get("category_weight", 0.001))
         justification = llm_entry.get("justification", "No justification returned by model.")

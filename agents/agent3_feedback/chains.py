@@ -34,13 +34,11 @@ def map_assessment_system_message(enunciado: str, diagram: dict[str, Any]):
                 A saída deve ser: um feedback que aponta onde o erro está no diagrama, e como o estudante poderia ter feito.
                 """
             ),
-            # TODO: Não está funcionando
             # "cache_control": {"type": "ephemeral"} 
         }
     ]
 )
-# TODO: Type temporarily BPMNEvidence until agent 2 is finished
-def map_assessment_chain(system_message: SystemMessage, llm: BaseChatModel, assessment: BPMNEvidence) -> str:
+def map_assessment_chain(system_message: SystemMessage, llm: BaseChatModel, assessment: BPMNAssessment) -> str:
     messages = [system_message, ("user", f"Item com erro: <data>{json.dumps(asdict(assessment), ensure_ascii=False)}</data>")]
     if type(llm) is ChatAnthropic:
         response = llm.invoke(messages, cache_control={"type": "ephemeral"})
