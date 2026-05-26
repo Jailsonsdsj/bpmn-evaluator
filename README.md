@@ -10,6 +10,7 @@ Three AI agents (Mapper → Evaluator → Feedback Generator) process a BPMN dia
 
 - Python 3.11 or higher
 - An [Anthropic API key](https://console.anthropic.com)
+- Or a [Google AI API key](https://aistudio.google.com/) Obs: set as GEMINI_API_KEY
 - Git
 
 ---
@@ -55,13 +56,21 @@ Open `.env` and fill in your Anthropic API key:
 
 ```
 ANTHROPIC_API_KEY=sk-ant-...
+MODEL_NAME=claude-sonnet-4-6
+```
+
+Or Google AI API key:
+
+```
+GEMINI_API_KEY=...
+MODEL_NAME=gemma-4-31b-it
 ```
 
 The other variables have working defaults and do not need to be changed for a first run:
 
 | Variable | Default | What it controls |
 |---|---|---|
-| `MODEL_NAME` | `claude-sonnet-4-20250514` | Claude model used by all agents |
+| `MODEL_NAME` | `claude-sonnet-4-6` | Claude model used by all agents |
 | `MAX_ITERATIONS` | `3` | Max Reflection loop iterations for Agent 2 |
 | `CONFIDENCE_THRESHOLD` | `0.6` | Minimum confidence before Agent 2 stops iterating |
 

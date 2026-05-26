@@ -70,10 +70,10 @@ class Agent3Feedback:
         
         return BPMNFeedback([(ItemGrade(feed[1], feed[2]), feed[0]) for feed in feedbacks])
 
-    def run_from_files(self, enunciado_path: str | Path, diagram_path: str | Path, checklist_path: str | Path) -> BPMNFeedback:
+    def run_from_files(self, enunciado_path: str | Path, diagram_path: str | Path, assessment_path: str | Path) -> BPMNFeedback:
         """Runs the mapper by loading diagram/checklist files from disk."""
         diagram = read_diagram_file(diagram_path)
-        assessment = read_bpmnassessment_file(checklist_path)
+        assessment = read_bpmnassessment_file(assessment_path)
         enunciado: str = Path(enunciado_path).read_text(encoding="utf-8")
         return self.run({"diagram": diagram, "assessment": assessment, "enunciado": enunciado})
 
