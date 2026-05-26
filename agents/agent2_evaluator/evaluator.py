@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from collections import Counter
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -65,41 +66,44 @@ def evaluate_once(
     evidence_list: list[BPMNEvidence],
     checklist: dict[str, dict[str, Any]],
     plan: str,
+    client: anthropic.Anthropic | None = None,
+    model: str | None = None,
 ) -> list[BPMNAssessment]:
     """Single-pass evaluation: validate each Agent 1 finding with one LLM call.
 
     checklist is used ONLY for category_weight — penalties come from evidence.value.
-    Returns one BPMNAssessment per evidence item. plan_log is stored only on
-    the first item. Does not loop — _reflect_loop wraps this function.
+    client and model may be injected (used by _reflect_loop and tests); when None
+    they are loaded from env. Returns empty list immediately for empty input.
     """
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    model = os.getenv("MODEL_NAME", "claude-opus-4-7")
-    threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
+    if not evidence_list:
+        return []
 
-    client = anthropic.Anthropic(api_key=api_key)
+    if client is None:
+        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+    if model is None:
+        model = os.getenv("MODEL_NAME", "claude-opus-4-7")
+    threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
     logger = structlog.get_logger("evaluate_once")
 
-    prompt = _build_evaluation_prompt(evidence_list, plan)
     logger.info("evaluate_once.llm_call", items=len(evidence_list), model=model)
 
-    response = client.messages.create(
-        model=model,
-        max_tokens=4096,
-        system=_EVAL_SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}],
+    prompt = _build_evaluation_prompt(evidence_list, plan)
+    llm_results = _call_llm_json(
+        client, model, _EVAL_SYSTEM_PROMPT,
+        [{"role": "user", "content": prompt}],
+        logger, context="evaluate_once",
     )
-
-    raw_text = next(block.text for block in response.content if block.type == "text")
-    llm_results = _parse_json_response(raw_text)
     llm_by_id = {r["criterion_id"]: r for r in llm_results}
 
     assessments: list[BPMNAssessment] = []
     for idx, evidence in enumerate(evidence_list):
         cid = evidence.criterion_id
-        # Checklist consulted only for category_weight; penalty comes from evidence.value
-        checklist_entry = checklist.get(cid, {})
-        llm_entry = llm_by_id.get(cid, {})
+        checklist_entry = checklist.get(cid)
+        if checklist_entry is None:
+            logger.warning("evaluate_once.missing_checklist_entry", criterion_id=cid)
+        checklist_entry = checklist_entry or {}
 
+        llm_entry = llm_by_id.get(cid, {})
         checklist_penalty = evidence.value
         category_weight = float(checklist_entry.get("category_weight", 0.0))
         justification = llm_entry.get("justification", "No justification returned by model.")
@@ -157,8 +161,8 @@ def _reflect_loop(
     evidence_by_id = {e.criterion_id: e for e in evidence_list}
     iteration_log: list[dict[str, Any]] = []
 
-    # --- Iteration 1: full evaluation pass ---
-    assessments = evaluate_once(evidence_list, checklist, plan)
+    # Iteration 1: full evaluation pass; inject client so tests can mock both calls
+    assessments = evaluate_once(evidence_list, checklist, plan, client=client, model=model)
     avg_conf = _avg_confidence(assessments)
     weak = [a for a in assessments if a.confidence < threshold]
 
@@ -182,7 +186,7 @@ def _reflect_loop(
     if stop_reason:
         return assessments, iteration_log
 
-    # --- Iterations 2..N: critique weak items only ---
+    # Iterations 2..N: critique weak items only
     prev_avg = avg_conf
     for iteration in range(2, max_iterations + 1):
         refined_ids = _critique_and_merge(
@@ -214,14 +218,6 @@ def _reflect_loop(
             break
         prev_avg = avg_conf
 
-    # Recompute flag_review on final assessments with final confidence values
-    for a in assessments:
-        object.__setattr__(a, "flag_review", a.confidence < threshold) if hasattr(a, "__dataclass_fields__") else None
-
-    # Dataclass is not frozen so direct assignment works
-    for a in assessments:
-        a.flag_review = a.confidence < threshold
-
     return assessments, iteration_log
 
 
@@ -240,19 +236,17 @@ def _critique_and_merge(
     if not weak:
         return []
 
-    prompt = _build_critique_prompt(weak, evidence_by_id)
-    response = client.messages.create(
-        model=model,
-        max_tokens=4096,
-        system=_CRITIQUE_SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    logger = structlog.get_logger("critique_and_merge")
+    logger.info("critique.llm_call", weak_items=len(weak))
 
-    raw_text = next(block.text for block in response.content if block.type == "text")
-    refined_results = _parse_json_response(raw_text)
+    prompt = _build_critique_prompt(weak, evidence_by_id)
+    refined_results = _call_llm_json(
+        client, model, _CRITIQUE_SYSTEM_PROMPT,
+        [{"role": "user", "content": prompt}],
+        logger, context="critique",
+    )
     refined_by_id = {r["criterion_id"]: r for r in refined_results}
 
-    # Index assessments for fast lookup
     assess_by_id = {a.criterion_id: a for a in assessments}
     refined_ids: list[str] = []
 
@@ -296,6 +290,43 @@ def _avg_confidence(assessments: list[BPMNAssessment]) -> float:
     if not assessments:
         return 0.0
     return sum(a.confidence for a in assessments) / len(assessments)
+
+
+# ---------------------------------------------------------------------------
+# LLM helper — retry once on JSON parse failure
+# ---------------------------------------------------------------------------
+
+def _call_llm_json(
+    client: anthropic.Anthropic,
+    model: str,
+    system: str,
+    messages: list[dict[str, Any]],
+    logger: Any,
+    context: str = "",
+) -> list[dict[str, Any]]:
+    """Call the LLM and parse the JSON response. Retries once on parse failure."""
+    for attempt in range(2):
+        response = client.messages.create(
+            model=model,
+            max_tokens=4096,
+            system=system,
+            messages=messages,
+        )
+        raw = next(b.text for b in response.content if b.type == "text")
+        results = _parse_json_response(raw)
+        if results:
+            if attempt > 0:
+                logger.info("llm.json_retry_success", context=context)
+            return results
+        logger.warning(
+            "llm.invalid_json",
+            attempt=attempt + 1,
+            context=context,
+            preview=raw[:200],
+        )
+
+    logger.error("llm.json_parse_failed_after_retry", context=context)
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -376,6 +407,41 @@ def _parse_json_response(text: str) -> list[dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
+# Serialization
+# ---------------------------------------------------------------------------
+
+def build_output(
+    assessments: list[BPMNAssessment],
+    iteration_log: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Build the JSON-serializable output dict matching the mock structure."""
+    status_counts = Counter(a.status for a in assessments)
+    items_for_review = [a.criterion_id for a in assessments if a.flag_review]
+    total_applied = round(sum(a.applied_penalty for a in assessments), 4)
+    final_avg = round(_avg_confidence(assessments), 4)
+    stop_reason = iteration_log[-1]["stop_reason"] if iteration_log else None
+
+    summary: dict[str, Any] = {
+        "total_criteria": len(assessments),
+        "status_counts": {
+            "cumprido": status_counts.get("cumprido", 0),
+            "nao_cumprido": status_counts.get("nao_cumprido", 0),
+            "nao_aplicavel": status_counts.get("nao_aplicavel", 0),
+        },
+        "items_for_review": items_for_review,
+        "total_applied_penalty": total_applied,
+        "iterations_ran": len(iteration_log),
+        "final_avg_confidence": final_avg,
+        "stop_reason": stop_reason,
+    }
+
+    return {
+        "summary": summary,
+        "assessments": [asdict(a) for a in assessments],
+    }
+
+
+# ---------------------------------------------------------------------------
 # Agent class
 # ---------------------------------------------------------------------------
 
@@ -408,7 +474,6 @@ class Agent2Evaluator:
         model = os.getenv("MODEL_NAME", "claude-opus-4-7")
         threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
         max_iterations = int(os.getenv("MAX_ITERATIONS", "3"))
-
         client = anthropic.Anthropic(api_key=api_key)
 
         self.logger.info(
@@ -418,23 +483,21 @@ class Agent2Evaluator:
             max_iterations=max_iterations,
         )
 
-        # Load → Plan
         checklist = load_checklist(checklist_path)
         self.logger.info("agent2.checklist_loaded", keys=len(checklist))
 
         plan = generate_analysis_plan(evidence_list)
         self.logger.info("agent2.plan_generated", plan_length=len(plan))
 
-        # Reflection loop
         assessments, self.iteration_log = _reflect_loop(
             evidence_list, checklist, plan, client, model, threshold, max_iterations
         )
 
-        # Flag — recompute flag_review from final confidence values
+        # Final flag_review pass after loop completes
         for a in assessments:
             a.flag_review = a.confidence < threshold
 
-        # Plan log on first item
+        # plan_log on first item only
         if assessments:
             assessments[0].plan_log = plan
 
@@ -447,7 +510,6 @@ class Agent2Evaluator:
             flagged=sum(1 for a in assessments if a.flag_review),
         )
 
-        # Serialize
         if output_path is not None:
             output = build_output(assessments, self.iteration_log)
             Path(output_path).write_text(
@@ -456,40 +518,3 @@ class Agent2Evaluator:
             self.logger.info("agent2.output_written", path=str(output_path))
 
         return assessments
-
-
-# ---------------------------------------------------------------------------
-# Serialization
-# ---------------------------------------------------------------------------
-
-def build_output(
-    assessments: list[BPMNAssessment],
-    iteration_log: list[dict[str, Any]],
-) -> dict[str, Any]:
-    """Build the JSON-serializable output dict matching the mock structure."""
-    from collections import Counter
-
-    status_counts = Counter(a.status for a in assessments)
-    items_for_review = [a.criterion_id for a in assessments if a.flag_review]
-    total_applied = round(sum(a.applied_penalty for a in assessments), 4)
-    final_avg = round(_avg_confidence(assessments), 4)
-    stop_reason = iteration_log[-1]["stop_reason"] if iteration_log else None
-
-    summary: dict[str, Any] = {
-        "total_criteria": len(assessments),
-        "status_counts": {
-            "cumprido": status_counts.get("cumprido", 0),
-            "nao_cumprido": status_counts.get("nao_cumprido", 0),
-            "nao_aplicavel": status_counts.get("nao_aplicavel", 0),
-        },
-        "items_for_review": items_for_review,
-        "total_applied_penalty": total_applied,
-        "iterations_ran": len(iteration_log),
-        "final_avg_confidence": final_avg,
-        "stop_reason": stop_reason,
-    }
-
-    return {
-        "summary": summary,
-        "assessments": [asdict(a) for a in assessments],
-    }
