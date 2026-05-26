@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-
+import langchain_google_genai
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser

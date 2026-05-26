@@ -8,6 +8,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+import langchain_google_genai
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
@@ -112,9 +113,9 @@ def evaluate_once(
 
         llm_entry = llm_by_id.get(cid, {})
         checklist_penalty = evidence.value
-        category_weight = float(checklist_entry.get("category_weight", 0.0))
+        category_weight = float(checklist_entry.get("category_weight", 0.001))
         justification = llm_entry.get("justification", "No justification returned by model.")
-        confidence = float(llm_entry.get("confidence", 0.0))
+        confidence = float(llm_entry.get("confidence", 0.001))
 
         applied_penalty = (
             0.0
@@ -155,7 +156,7 @@ def _reflect_loop(
     evidence_list: list[BPMNEvidence],
     checklist: dict[str, dict[str, Any]],
     plan: str,
-    client: ChatAnthropic,
+    client: ChatAnthropic | ChatGoogleGenerativeAI,
     model: str,
     threshold: float,
     max_iterations: int,
@@ -234,7 +235,7 @@ def _critique_and_merge(
     assessments: list[BPMNAssessment],
     weak: list[BPMNAssessment],
     evidence_by_id: dict[str, BPMNEvidence],
-    client: ChatAnthropic,
+    client: ChatAnthropic | ChatGoogleGenerativeAI,
     model: str,
     threshold: float,
 ) -> list[str]:
@@ -316,9 +317,8 @@ def _call_llm_json(
     """Call the LLM and parse the JSON response. Retries once on parse failure."""
     for attempt in range(2):
         response = client.with_config(max_tokens=4096).invoke(
-            input=messages,
+            input=[{"role": "system", "content": system}]+messages,
         )
-        print("Called invoke2")
         results = JsonOutputParser().invoke(response)
         if results:
             if attempt > 0:
