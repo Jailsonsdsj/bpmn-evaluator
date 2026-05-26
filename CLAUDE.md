@@ -101,10 +101,10 @@ Individual penalties vary (0.1 to 0.8). The heaviest single item is "expected ga
 class BPMNEvidence:
     criterion_id: str
     category: str               # syntax | proposal | semantics | best_practices | readability
-    status: str                 # present | absent | incorrect | not_applicable
-    value: float | None         # 1.0 if present, 0.0 if absent/incorrect, None if not_applicable
+    status: str                 # cumprido | nao_cumprido | nao_aplicavel
+    value: float                # checklist penalty score to deduct if not met
     element: str | None         # name/id of the element in the diagram
-    observation: str | None     # description of the problem (for absent/incorrect)
+    observation: str | None     # description of the problem (for nao_cumprido)
     question: str               # the criterion text from the checklist
 
 @dataclass
@@ -112,9 +112,9 @@ class BPMNAssessment:
     criterion_id: str
     category: str
     category_weight: float      # global weight of the category (e.g. 0.30 for syntax)
-    status: str                 # present | absent | incorrect | not_applicable
+    status: str                 # cumprido | nao_cumprido | nao_aplicavel
     checklist_penalty: float    # penalty value COPIED from the checklist (not computed)
-    applied_penalty: float      # 0.0 if present/not_applicable; equals checklist_penalty if absent/incorrect
+    applied_penalty: float      # 0.0 if cumprido/nao_aplicavel; equals checklist_penalty if nao_cumprido
     justification: str          # Agent 2's reasoning validating the finding
     confidence: float           # 0.0–1.0 (never inflate)
     flag_review: bool           # True if confidence < CONFIDENCE_THRESHOLD
@@ -124,8 +124,9 @@ class BPMNAssessment:
 Serialization: `dataclasses.asdict()` → `json.dumps()`. Reading: `json.loads()` → instantiate manually.
 
 **Notes on the contract:**
-- `value` uses `None` for `not_applicable` — a non-applicable criterion must NOT count as zero points against the student.
-- `checklist_penalty` is COPIED from the checklist CSV, never decided by the LLM.
+- `value` in `BPMNEvidence` carries the checklist penalty; Agent 2 copies it into `checklist_penalty`. The `status` field already encodes met/not-met, so a separate fractional value was redundant.
+- `nao_aplicavel` items always have `applied_penalty=0.0` — a criterion out of scope must NOT subtract points from the student.
+- `checklist_penalty` is COPIED from the checklist CSV (via `BPMNEvidence.value`), never decided by the LLM.
 - The pre-written feedback sentence does NOT travel in `BPMNEvidence`. Agent 3 looks it up in the checklist CSV using `criterion_id`.
 
 ---
@@ -141,9 +142,9 @@ Serialization: `dataclasses.asdict()` → `json.dumps()`. Reading: `json.loads()
 **Prompt Chaining steps:**
 1. Load and structure the diagram JSON
 2. Load the checklist CSV by category
-3. Map each criterion → status (`present` / `absent` / `incorrect` / `not_applicable`)
+3. Map each criterion → status (`cumprido` / `nao_cumprido` / `nao_aplicavel`)
 
-**Critical rule:** Agent 1 may only reference elements present in the input JSON. Zero hallucinations of nonexistent elements. Criteria that the diagram's characteristics do not reach get `not_applicable` (e.g. message-flow criteria in a single-pool diagram).
+**Critical rule:** Agent 1 may only reference elements present in the input JSON. Zero hallucinations of nonexistent elements. Criteria that the diagram's characteristics do not reach get `nao_aplicavel` (e.g. message-flow criteria in a single-pool diagram).
 
 **Output:** list of `BPMNEvidence` serialized as JSON.
 
@@ -156,9 +157,9 @@ Serialization: `dataclasses.asdict()` → `json.dumps()`. Reading: `json.loads()
 **Responsibility (REDUCED scope):** receive `BPMNEvidence` and produce `BPMNAssessment`. The agent does **NOT invent penalties** — it copies `checklist_penalty` from the checklist. Its real job is:
 
 1. **Validate** whether Agent 1's finding is correct ("did A1 correctly judge this criterion as not met?")
-2. **Resolve `not_applicable` cases** correctly — confirm a criterion is genuinely out of scope
+2. **Resolve `nao_aplicavel` cases** correctly — confirm a criterion is genuinely out of scope
 3. **Assign a confidence score** (0.0–1.0) per item
-4. Copy `checklist_penalty` and set `applied_penalty` (0.0 for present/not_applicable, equal to penalty for absent/incorrect)
+4. Copy `checklist_penalty` and set `applied_penalty` (0.0 for cumprido/nao_aplicavel, equal to penalty for nao_cumprido)
 
 **Patterns:** Planning (per-category analysis plan before validating), Reflection Producer-Critic (self-critique loop).
 
@@ -199,9 +200,9 @@ Between Agent 2 and Agent 3. Simplified implementation via editable file.
 
 **Job 1 — Calculate the final grade.** Deterministic, in Python (no LLM):
 - Start from the full grade (10)
-- Subtract `applied_penalty` of every `absent`/`incorrect` item
+- Subtract `applied_penalty` of every `nao_cumprido` item
 - Apply category weights for the per-category breakdown
-- `not_applicable` items never subtract points
+- `nao_aplicavel` items never subtract points
 
 **Job 2 — Generate personalized formative feedback.** For each penalized item:
 - Look up the pre-written feedback sentence in the checklist CSV via `criterion_id`
@@ -374,7 +375,7 @@ Currently 2 diagrams are in the repository; more will be added as curation progr
 | Agent 2 assesses criteria without basis in evidence | A2 may only reference items in `BPMNEvidence`; confidence < threshold forces human review |
 | Reflection loop does not converge | `MAX_ITERATIONS=3` + stagnation detection — terminates with uncertainty flag |
 | Loop artificially inflates confidence | A2 system prompt explicitly instructs conservative scoring; calibrate thresholds 0.5/0.6/0.7 in issue #19 |
-| Wrong handling of `not_applicable` inflates or deflates the grade | `not_applicable` items always have `applied_penalty=0.0` and `value=None`; never subtract points |
+| Wrong handling of `nao_aplicavel` inflates or deflates the grade | `nao_aplicavel` items always have `applied_penalty=0.0`; never subtract points |
 | Dataset unavailable in time | Contact the BPM course professor immediately; Member A responsible for curation |
 | Checklist CSV format changes between semesters | Pin the checklist version used; document it explicitly in `evaluation/dataset/` |
 

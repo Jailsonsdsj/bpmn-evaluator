@@ -4,9 +4,9 @@ from dataclasses import dataclass
 @dataclass
 class BPMNEvidence:
     criterion_id: str
-    category: str
-    status: str
-    value: float
+    category: str               # syntax | proposal | semantics | best_practices | readability
+    status: str                 # cumprido | nao_cumprido | nao_aplicavel
+    value: float                # checklist penalty score to deduct if not met
     element: str
     observation: str | None = None
     question: str | None = None

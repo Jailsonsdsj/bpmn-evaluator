@@ -18,7 +18,7 @@ BPMN diagram evidence before applying penalties.
 
 Before evaluating any item, you ALWAYS produce a structured analysis plan that:
 1. Lists the categories present in the evidence, ordered by their pedagogical importance.
-2. Highlights criteria that require closer attention (absent or incorrect elements).
+2. Highlights criteria that require closer attention (nao_cumprido elements).
 3. Notes any patterns or risks across categories.
 
 Be concise and specific. The plan guides the evaluation — it is not a final verdict.\
@@ -71,22 +71,20 @@ def _build_evidence_summary(evidence_list: list[BPMNEvidence]) -> str:
 
     for category in ordered_categories:
         items = by_category[category]
-        absent = [e for e in items if e.status == "absent"]
-        incorrect = [e for e in items if e.status == "incorrect"]
-        present = [e for e in items if e.status == "present"]
+        nao_cumprido = [e for e in items if e.status == "nao_cumprido"]
+        nao_aplicavel = [e for e in items if e.status == "nao_aplicavel"]
+        cumprido = [e for e in items if e.status == "cumprido"]
 
         lines.append(f"\n[{category.upper()}] ({len(items)} criteria)")
-        if absent:
-            lines.append(f"  ABSENT ({len(absent)}):")
-            for e in absent:
-                lines.append(f"    - [{e.criterion_id}] {e.question or e.element}")
-        if incorrect:
-            lines.append(f"  INCORRECT ({len(incorrect)}):")
-            for e in incorrect:
+        if nao_cumprido:
+            lines.append(f"  NAO_CUMPRIDO ({len(nao_cumprido)}):")
+            for e in nao_cumprido:
                 obs = f" — {e.observation}" if e.observation else ""
                 lines.append(f"    - [{e.criterion_id}] {e.question or e.element}{obs}")
-        if present:
-            lines.append(f"  PRESENT ({len(present)}): {', '.join(e.criterion_id for e in present)}")
+        if nao_aplicavel:
+            lines.append(f"  NAO_APLICAVEL ({len(nao_aplicavel)}): {', '.join(e.criterion_id for e in nao_aplicavel)}")
+        if cumprido:
+            lines.append(f"  CUMPRIDO ({len(cumprido)}): {', '.join(e.criterion_id for e in cumprido)}")
 
     return "\n".join(lines)
 
