@@ -2,8 +2,8 @@
   {
     "criterion_id": "syntax_1",
     "category": "syntax",
-    "status": "absent",
-    "value": 0.0,
+    "status": "nao_cumprido",
+    "value": 0.20,
     "element": "sequenceFlow",
     "observation": null,
     "question": "O conector \"fluxo de sequência\" está sendo utilizado apenas entre raias?"
@@ -11,8 +11,8 @@
   {
     "criterion_id": "syntax_3",
     "category": "syntax",
-    "status": "present",
-    "value": 1.0,
+    "status": "cumprido",
+    "value": 0.20,
     "element": "Gateway_01 (gw1)",
     "observation": null,
     "question": "Os desvios (Gateway) estão sendo conectados pelo conector fluxo de sequência?"
@@ -20,8 +20,8 @@
   {
     "criterion_id": "syntax_4",
     "category": "syntax",
-    "status": "absent",
-    "value": 0.0,
+    "status": "nao_cumprido",
+    "value": 0.20,
     "element": "startEvent",
     "observation": null,
     "question": "Evento de início foi inserido para cada piscina?"
@@ -29,8 +29,8 @@
   {
     "criterion_id": "syntax_9",
     "category": "syntax",
-    "status": "incorrect",
-    "value": 0.5,
+    "status": "nao_cumprido",
+    "value": 0.20,
     "element": "Aprovar pedido (t2)",
     "observation": "Tarefa do tipo 'abstract' deveria ser 'userTask'.",
     "question": "O tipo de cada tarefa está correto?"
@@ -38,8 +38,8 @@
   {
     "criterion_id": "proposal_1",
     "category": "proposal",
-    "status": "present",
-    "value": 1.0,
+    "status": "cumprido",
+    "value": 0.30,
     "element": "Receber pedido (t1)",
     "observation": null,
     "question": "As tarefas esperadas para o processo foram modeladas?"
@@ -47,8 +47,8 @@
   {
     "criterion_id": "proposal_2",
     "category": "proposal",
-    "status": "absent",
-    "value": 0.0,
+    "status": "nao_cumprido",
+    "value": 0.20,
     "element": "pool",
     "observation": null,
     "question": "Os atores esperados para o processo foram modelados?"
@@ -56,8 +56,8 @@
   {
     "criterion_id": "semantics_1",
     "category": "semantics",
-    "status": "present",
-    "value": 1.0,
+    "status": "cumprido",
+    "value": 0.75,
     "element": "Receber pedido (t1)",
     "observation": null,
     "question": "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?"
@@ -65,8 +65,8 @@
   {
     "criterion_id": "best_practices_1",
     "category": "best_practices",
-    "status": "absent",
-    "value": 0.0,
+    "status": "nao_cumprido",
+    "value": 0.20,
     "element": "startEvent",
     "observation": null,
     "question": "Evento de início e fim possuem rótulo?"
@@ -74,8 +74,8 @@
   {
     "criterion_id": "best_practices_2",
     "category": "best_practices",
-    "status": "present",
-    "value": 1.0,
+    "status": "cumprido",
+    "value": 0.20,
     "element": "Gateway_01 (gw1)",
     "observation": null,
     "question": "Os desvios (Gateway) exclusivos possuem rótulo com a decisão a ser tomada?"
@@ -83,8 +83,8 @@
   {
     "criterion_id": "readability_1",
     "category": "readability",
-    "status": "absent",
-    "value": 0.0,
+    "status": "nao_cumprido",
+    "value": 0.20,
     "element": "sequenceFlow",
     "observation": null,
     "question": "Existe ausência de cruzamento de linhas ou de conexões entre elementos?"
