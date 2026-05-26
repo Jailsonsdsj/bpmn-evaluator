@@ -36,7 +36,7 @@ class Criterion:
 
 
 class Agent3Feedback:
-    """Agent 3: BPMN evidence to personalized feedback."""
+    """Agent 3: BPMN Assessment to personalized feedback."""
 
     def __init__(self) -> None:
         self.logger = structlog.get_logger(self.__class__.__name__)
@@ -49,12 +49,11 @@ class Agent3Feedback:
         elif ChatAnthropic is not None and os.getenv("ANTHROPIC_API_KEY", None) is not None:
             llm = ChatAnthropic(model_name=os.getenv("MODEL_NAME", "").strip(), temperature=0.7, timeout=None, stop=[])
         else:
-            print("NENHUMA API KEY VÁLIDA ENCONTRADA NO ENVIRONMENT OR MISSING NECESSARY LIBS")
+            print("NENHUMA API KEY VÁLIDA ENCONTRADA NO ENVIRONMENT OU FALTANDO LIBS NECESSÁRIAS (langchain_anthropic ou langchain_google_genai)")
             exit(2)
         
         diagram = normalize_diagram(payload.get("diagram", {}))
-        # TODO: Tipo temporariamente BPMNEvidence até o agente 2 ser finalizado
-        assessment: list[BPMNEvidence] = payload.get("assessment", {})
+        assessment: list[BPMNAssessment] = payload.get("assessment", {})
         enunciado: str = payload.get("enunciado", {})
 
         self.logger.info("agent3.start")
@@ -66,7 +65,6 @@ class Agent3Feedback:
         )
         
         self.logger.info("agent3.bpmnasessment_loaded", total=len(assessment))
-        # TODO: mapear cada assessment para um feedback
         system_message = map_assessment_system_message(enunciado, diagram)
         feedbacks = [self._map_assessment(system_message=system_message, assessment=assessment, llm=llm) for assessment in assessment]
         
@@ -75,8 +73,7 @@ class Agent3Feedback:
     def run_from_files(self, enunciado_path: str | Path, diagram_path: str | Path, checklist_path: str | Path) -> BPMNFeedback:
         """Runs the mapper by loading diagram/checklist files from disk."""
         diagram = read_diagram_file(diagram_path)
-        # TODO: Type temporarily BPMNEvidence until agent 2 is finished
-        assessment = read_bpmnevidence_file(checklist_path)
+        assessment = read_bpmnassessment_file(checklist_path)
         enunciado: str = Path(enunciado_path).read_text(encoding="utf-8")
         return self.run({"diagram": diagram, "assessment": assessment, "enunciado": enunciado})
 
@@ -91,23 +88,22 @@ class Agent3Feedback:
         if "flows" in diagram and not isinstance(diagram.get("flows"), list):
             raise ValueError("Diagrama inválido: campo 'flows' deve ser uma lista.")
 
-    # TODO: Type temporarily BPMNEvidence until agent 2 is finished
-    def _map_assessment(self, assessment: BPMNEvidence, system_message: SystemMessage, llm) -> tuple[str, float, str]:
+    def _map_assessment(self, assessment: BPMNAssessment, system_message: SystemMessage, llm) -> tuple[str, float, str]:
         """Mapeia um assessment, juntamente como um enunciado e diagrama, a um feedback personalizado
 
         Args:
             enunciado (str): Enunciado original descrevendo o processo
             diagram (dict[str, Any]): Diagrama BPMN
-            assessment (BPMNEvidence): Avaliação de um critério do checklist
+            assessment (BPMNAssessment): Avaliação de um critério do checklist
 
         Returns:
             None | tuple[str, float, str]: Feedback personalizado, nota, questão
         """
-        if assessment.value == 1.0:
-            return ("Sem problemas", 1.0, assessment.question or "")
+        if assessment.applied_penalty == 0.0:
+            return ("Sem problemas", assessment.category_weight, assessment.question or "")
         else:
             # Criar uma pipeline do langgraph para fazer o mapeamento
             feedback = map_assessment_chain(system_message, llm, assessment)
-            return (feedback, assessment.value, assessment.question or "")
+            return (feedback, (1-assessment.applied_penalty) * assessment.category_weight, assessment.question or "")
 
 

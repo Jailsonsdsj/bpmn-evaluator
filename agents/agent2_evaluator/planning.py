@@ -62,8 +62,6 @@ def generate_analysis_plan(evidence_list: list[BPMNEvidence]) -> str:
             }
         ],
     )
-    print("Called invoke1")
-
     return StrOutputParser().invoke(response)
 
 

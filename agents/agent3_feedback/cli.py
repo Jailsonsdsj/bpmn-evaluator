@@ -157,8 +157,8 @@ def _run_gui() -> int:
         try:
             multiple = len(diagram_paths) > 1
             for diagram_path in diagram_paths:
-                evidences = agent.run_from_files(enunciado_path, diagram_path, bpmnassessment_path)
-                payload = agent.serialize(evidences)
+                feedback = agent.run_from_files(enunciado_path, diagram_path, bpmnassessment_path)
+                payload = agent.serialize(feedback)
                 output_file = _output_path_for_diagram(output_dir, diagram_path, multiple)
                 output_file.parent.mkdir(parents=True, exist_ok=True)
                 output_file.write_text(payload, encoding="utf-8")
@@ -218,7 +218,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     print("Finalizado!")
     payload = agent.serialize(feedback)
     if args.interactive:
-        print("lmao")
         output_path = input(
             "Pasta de saída (ENTER para imprimir no terminal; arquivo será BPMNFeedback.json): "
         ).strip().strip('"')
