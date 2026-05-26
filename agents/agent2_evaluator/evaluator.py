@@ -8,6 +8,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+import langchain_google_genai
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
@@ -113,8 +114,10 @@ def evaluate_once(
         llm_entry = llm_by_id.get(cid, {})
         checklist_penalty = 1.0 - evidence.value # Aplica penalidade
         category_weight = float(checklist_entry.get("category_weight", 0.0))
+        checklist_penalty = evidence.value
+        category_weight = float(checklist_entry.get("category_weight", 0.001))
         justification = llm_entry.get("justification", "No justification returned by model.")
-        confidence = float(llm_entry.get("confidence", 0.0))
+        confidence = float(llm_entry.get("confidence", 0.001))
 
         applied_penalty = (
             0.0
@@ -316,7 +319,7 @@ def _call_llm_json(
     """Call the LLM and parse the JSON response. Retries once on parse failure."""
     for attempt in range(2):
         response = client.with_config(max_tokens=4096).invoke(
-            input=messages,
+            input=[{"role": "system", "content": system}]+messages,
         )
         results = JsonOutputParser().invoke(response)
         if results:
