@@ -60,7 +60,8 @@ def make_assessment(
         confidence=confidence,
         flag_review=confidence < 0.6,
         plan_log=None,
-        element="",
+        element="elem",
+        question="?"
     )
 
 

@@ -265,7 +265,7 @@ Valid element types: `startEvent`, `endEvent`, `task`, `userTask`, `serviceTask`
 ```bash
 # .env.example
 ANTHROPIC_API_KEY=your_api_key_here
-MODEL_NAME=claude-sonnet-4-20250514
+MODEL_NAME=claude-sonnet-4-6
 MAX_ITERATIONS=3
 CONFIDENCE_THRESHOLD=0.6
 ```

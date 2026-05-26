@@ -1,0 +1,342 @@
+{
+  "id": "diagram_001",
+  "name": "Processo de Recrutamento e Sele\u00e7\u00e3o",
+  "elements": [
+    {
+      "id": "e1",
+      "type": "startEvent",
+      "name": "hunger noticed",
+      "incoming": [],
+      "outgoing": [
+        "f1"
+      ]
+    },
+    {
+      "id": "t1",
+      "type": "task",
+      "name": "Enviar pedido formal de contrata\u00e7\u00e3o",
+      "incoming": [
+        "f1"
+      ],
+      "outgoing": [
+        "f2"
+      ]
+    },
+    {
+      "id": "t2",
+      "type": "task",
+      "name": "Detalhar o perfil desejado do candidato",
+      "incoming": [
+        "f2"
+      ],
+      "outgoing": [
+        "f3"
+      ]
+    },
+    {
+      "id": "t3",
+      "type": "task",
+      "name": "Divulgar a vaga em m\u00faltiplos canais",
+      "incoming": [
+        "f3"
+      ],
+      "outgoing": [
+        "f4"
+      ]
+    },
+    {
+      "id": "t4",
+      "type": "task",
+      "name": "Triar curr\u00edculos",
+      "incoming": [
+        "f4"
+      ],
+      "outgoing": [
+        "f5"
+      ]
+    },
+    {
+      "id": "g1",
+      "type": "exclusiveGateway",
+      "name": "",
+      "incoming": [
+        "f5"
+      ],
+      "outgoing": [
+        "f6",
+        "f7"
+      ]
+    },
+    {
+      "id": "t5",
+      "type": "userTask",
+      "name": "Convidar candidatos para entrevistas iniciais com RH",
+      "incoming": [
+        "f6"
+      ],
+      "outgoing": [
+        "f8"
+      ]
+    },
+    {
+      "id": "t6",
+      "type": "userTask",
+      "name": "Convidar candidatos para entrevistas com Gestor",
+      "incoming": [
+        "f8"
+      ],
+      "outgoing": [
+        "f9"
+      ]
+    },
+    {
+      "id": "t7",
+      "type": "userTask",
+      "name": "Selecionar os candidatos",
+      "incoming": [
+        "f9"
+      ],
+      "outgoing": [
+        "f10"
+      ]
+    },
+    {
+      "id": "t8",
+      "type": "task",
+      "name": "Descartar",
+      "incoming": [
+        "f7"
+      ],
+      "outgoing": [
+        "f11"
+      ]
+    },
+    {
+      "id": "e2",
+      "type": "endEvent",
+      "name": "Reprovado",
+      "incoming": [
+        "f11"
+      ],
+      "outgoing": []
+    },
+    {
+      "id": "t9",
+      "type": "task",
+      "name": "Enviar oferta de emprego para candidato",
+      "incoming": [
+        "f10"
+      ],
+      "outgoing": [
+        "f12"
+      ]
+    },
+    {
+      "id": "t10",
+      "type": "serviceTask",
+      "name": "Comunica\u00e7\u00e3o com o candidato",
+      "incoming": [
+        "f12"
+      ],
+      "outgoing": [
+        "f13",
+        "f14"
+      ]
+    },
+    {
+      "id": "t11",
+      "type": "task",
+      "name": "Analisar oferta",
+      "incoming": [
+        "f13"
+      ],
+      "outgoing": [
+        "f15"
+      ]
+    },
+    {
+      "id": "t12",
+      "type": "task",
+      "name": "Analisar pr\u00f3ximo candidato",
+      "incoming": [
+        "f14"
+      ],
+      "outgoing": []
+    },
+    {
+      "id": "g2",
+      "type": "exclusiveGateway",
+      "name": "Resposta do candidato",
+      "incoming": [
+        "f15",
+        "f16"
+      ],
+      "outgoing": [
+        "f17",
+        "f18"
+      ]
+    },
+    {
+      "id": "t13",
+      "type": "userTask",
+      "name": "Contratar candidato",
+      "incoming": [
+        "f17"
+      ],
+      "outgoing": [
+        "f19"
+      ]
+    },
+    {
+      "id": "t14",
+      "type": "task",
+      "name": "Integrar candidato",
+      "incoming": [
+        "f19"
+      ],
+      "outgoing": [
+        "f20"
+      ]
+    },
+    {
+      "id": "e3",
+      "type": "endEvent",
+      "name": "",
+      "incoming": [
+        "f20"
+      ],
+      "outgoing": []
+    },
+    {
+      "id": "e4",
+      "type": "endEvent",
+      "name": "",
+      "incoming": [
+        "f18"
+      ],
+      "outgoing": []
+    }
+  ],
+  "flows": [
+    {
+      "id": "f1",
+      "source": "e1",
+      "target": "t1",
+      "name": ""
+    },
+    {
+      "id": "f2",
+      "source": "t1",
+      "target": "t2",
+      "name": ""
+    },
+    {
+      "id": "f3",
+      "source": "t2",
+      "target": "t3",
+      "name": ""
+    },
+    {
+      "id": "f4",
+      "source": "t3",
+      "target": "t4",
+      "name": ""
+    },
+    {
+      "id": "f5",
+      "source": "t4",
+      "target": "g1",
+      "name": ""
+    },
+    {
+      "id": "f6",
+      "source": "g1",
+      "target": "t5",
+      "name": "Atendeu aos requisitos m\u00ednimos?"
+    },
+    {
+      "id": "f7",
+      "source": "g1",
+      "target": "t8",
+      "name": "N\u00e3o atendeu aos requisitos m\u00ednimos?"
+    },
+    {
+      "id": "f8",
+      "source": "t5",
+      "target": "t6",
+      "name": ""
+    },
+    {
+      "id": "f9",
+      "source": "t6",
+      "target": "t7",
+      "name": ""
+    },
+    {
+      "id": "f10",
+      "source": "t7",
+      "target": "t9",
+      "name": ""
+    },
+    {
+      "id": "f11",
+      "source": "t8",
+      "target": "e2",
+      "name": ""
+    },
+    {
+      "id": "f12",
+      "source": "t9",
+      "target": "t10",
+      "name": ""
+    },
+    {
+      "id": "f13",
+      "source": "t10",
+      "target": "t11",
+      "name": "Recebimento de oferta pelo candidato"
+    },
+    {
+      "id": "f14",
+      "source": "t10",
+      "target": "t12",
+      "name": ""
+    },
+    {
+      "id": "f15",
+      "source": "t11",
+      "target": "g2",
+      "name": "Resposta sobre a oferta"
+    },
+    {
+      "id": "f16",
+      "source": "t10",
+      "target": "g2",
+      "name": ""
+    },
+    {
+      "id": "f17",
+      "source": "g2",
+      "target": "t13",
+      "name": "Candidato aceita oferta"
+    },
+    {
+      "id": "f18",
+      "source": "g2",
+      "target": "e4",
+      "name": "Candidato recusa oferta"
+    },
+    {
+      "id": "f19",
+      "source": "t13",
+      "target": "t14",
+      "name": ""
+    },
+    {
+      "id": "f20",
+      "source": "t14",
+      "target": "e3",
+      "name": ""
+    }
+  ]
+}
