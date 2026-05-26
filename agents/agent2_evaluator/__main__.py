@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from agents.agent2_evaluator.evaluator import Agent2Evaluator, build_output
 from agents.agent2_evaluator.loaders import load_evidence
 
-MOCK_EVIDENCE_PATH = Path(__file__).parent / "mocks" / "mock_bpmn_evidence.json"
-MOCK_ASSESSMENT_PATH = Path(__file__).parent / "mocks" / "mock_bpmn_assessment.json"
+REAL_EVIDENCE_PATH = (
+    Path(__file__).parents[2] / "evaluation" / "results" / "BPMNEvidence.json"
+)
 CHECKLIST_PATH = (
     Path(__file__).parents[2]
     / "evaluation"
@@ -19,36 +19,10 @@ OUTPUT_PATH = (
 )
 
 
-def _keys_recursive(obj: object, prefix: str = "") -> list[str]:
-    """Return sorted dotted key paths from a JSON object."""
-    keys: list[str] = []
-    if isinstance(obj, dict):
-        for k, v in obj.items():
-            full = f"{prefix}.{k}" if prefix else k
-            keys.append(full)
-            if isinstance(v, (dict, list)):
-                keys.extend(_keys_recursive(v, full))
-    elif isinstance(obj, list) and obj:
-        keys.extend(_keys_recursive(obj[0], f"{prefix}[]"))
-    return sorted(set(keys))
-
-
-def _diff_structure(mock: dict, output: dict) -> list[str]:
-    mock_keys = set(_keys_recursive(mock))
-    out_keys = set(_keys_recursive(output))
-    missing = sorted(mock_keys - out_keys)
-    extra = sorted(out_keys - mock_keys)
-    diffs = []
-    if missing:
-        diffs.append(f"  Keys in mock but NOT in output : {missing}")
-    if extra:
-        diffs.append(f"  Keys in output but NOT in mock : {extra}")
-    return diffs
-
 
 def main() -> None:
-    print("Loading mock evidence...")
-    evidence_list = load_evidence(MOCK_EVIDENCE_PATH)
+    print("Loading evidence...")
+    evidence_list = load_evidence(REAL_EVIDENCE_PATH)
     print(f"  Evidence items : {len(evidence_list)}")
 
     print("\nRunning full Agent 2 pipeline (load → plan → loop → serialize)...")
@@ -109,19 +83,6 @@ def main() -> None:
     has_plan_log = sum(1 for a in assessments if a.plan_log is not None)
     print(f"\n  applied_penalty rules : {'PASS' if penalty_ok else 'FAIL'}")
     print(f"  Items with plan_log   : {has_plan_log}  (expected: 1)")
-
-    # --- Structure diff ---
-    print(f"\n{'='*70}")
-    print("STRUCTURE DIFF vs mock_bpmn_assessment.json")
-    print(f"{'='*70}")
-    mock = json.loads(MOCK_ASSESSMENT_PATH.read_text(encoding="utf-8"))
-    diffs = _diff_structure(mock, output)
-    if diffs:
-        print("  MISMATCH:")
-        for d in diffs:
-            print(d)
-    else:
-        print("  MATCH — output structure is identical to mock.")
 
     print(f"\n  Output written to: {OUTPUT_PATH}")
 
