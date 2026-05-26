@@ -24,3 +24,14 @@ class BPMNAssessment:
     confidence: float
     flag_review: bool
     plan_log: str | None = None
+    
+@dataclass
+class ItemGrade:
+    value: float
+    category: str
+
+# TODO: Esse não é o contrato definitivo
+@dataclass
+class BPMNFeedback:
+    grades_and_feedbacks: list[tuple[ItemGrade, str]]
+
