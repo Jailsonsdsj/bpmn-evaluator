@@ -70,7 +70,7 @@ The other variables have working defaults and do not need to be changed for a fi
 
 | Variable | Default | What it controls |
 |---|---|---|
-| `MODEL_NAME` | `claude-sonnet-4-6` | Claude model used by all agents |
+| `MODEL_NAME` | `claude-sonnet-4-6` | Claude/Google AI model used by all agents |
 | `MAX_ITERATIONS` | `3` | Max Reflection loop iterations for Agent 2 |
 | `CONFIDENCE_THRESHOLD` | `0.6` | Minimum confidence before Agent 2 stops iterating |
 
@@ -83,7 +83,8 @@ The other variables have working defaults and do not need to be changed for a fi
 ```bash
 python main.py \
   --diagram evaluation/dataset/diagram_001.json \
-  --checklist evaluation/dataset/checklist.json \
+  --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  --enunciado evaluation/dataset/Instruções.txt
   --output evaluation/results/
 ```
 
@@ -97,16 +98,16 @@ The pipeline will pause at the Human Review step and prompt you to edit `assessm
 docker compose -f docker/docker-compose.yml run --rm pipeline
 ```
 
-The pipeline container runs the command after `#All` in `commands.txt`.
+The pipeline container runs the command after `#All` in `run_all.sh`.
 Update that line with the diagram/checklist/enunciado/assessment paths you want to run.
 
-When you click **Run** on the image in Docker Desktop, it also executes the same `#All` command from `commands.txt`.
+When you click **Run** on the image in Docker Desktop, it also executes the same `#All` command from `run_all.sh`.
 
 **Required files (must exist inside the repo):**
 
-- Diagram: e.g. `evaluation/dataset/Resolucao1.json`
+- Diagram: e.g. `evaluation/dataset/diagram_001.json`
 - Checklist: e.g. `evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv`
-- Enunciado: e.g. `evaluation/dataset/Enunciado.txt` (create this file if you don't have one yet)
+- Enunciado: e.g. `evaluation/dataset/Instruções.txt`
 
 If any path in the `#All` command points to a missing file, the pipeline will fail with `FileNotFoundError`.
 

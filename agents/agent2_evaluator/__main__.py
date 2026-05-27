@@ -1,33 +1,61 @@
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 from agents.agent2_evaluator.evaluator import Agent2Evaluator, build_output
 from agents.agent2_evaluator.loaders import load_evidence
 
-REAL_EVIDENCE_PATH = (
+_DEFAULT_EVIDENCE_PATH = (
     Path(__file__).parents[2] / "evaluation" / "results" / "BPMNEvidence.json"
 )
-CHECKLIST_PATH = (
+_DEFAULT_CHECKLIST_PATH = (
     Path(__file__).parents[2]
     / "evaluation"
     / "dataset"
     / "Checklist completo - Modelagem 1 - Básico.csv"
 )
-OUTPUT_PATH = (
+_DEFAULT_OUTPUT_PATH = (
     Path(__file__).parents[2] / "evaluation" / "results" / "BPMNAssessment.json"
 )
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Agent 2 — BPMN Critic Validator")
+    parser.add_argument(
+        "--evidence",
+        type=Path,
+        default=_DEFAULT_EVIDENCE_PATH,
+        help=f"Path to BPMNEvidence JSON (default: {_DEFAULT_EVIDENCE_PATH})",
+    )
+    parser.add_argument(
+        "--checklist",
+        type=Path,
+        default=_DEFAULT_CHECKLIST_PATH,
+        help=f"Path to checklist CSV (default: {_DEFAULT_CHECKLIST_PATH})",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=_DEFAULT_OUTPUT_PATH,
+        help=f"Path for BPMNAssessment output JSON (default: {_DEFAULT_OUTPUT_PATH})",
+    )
+    return parser.parse_args()
+
 
 def main() -> None:
+    args = _parse_args()
+    evidence_path = args.evidence
+    checklist_path = args.checklist
+    output_path = args.output
+
     print("Loading evidence...")
-    evidence_list = load_evidence(REAL_EVIDENCE_PATH)
+    evidence_list = load_evidence(evidence_path)
     print(f"  Evidence items : {len(evidence_list)}")
 
     print("\nRunning full Agent 2 pipeline (load → plan → loop → serialize)...")
     evaluator = Agent2Evaluator()
-    assessments = evaluator.run(evidence_list, CHECKLIST_PATH, OUTPUT_PATH)
+    assessments = evaluator.run(evidence_list, checklist_path, output_path)
 
     output = build_output(assessments, evaluator.iteration_log)
 
@@ -84,7 +112,7 @@ def main() -> None:
     print(f"\n  applied_penalty rules : {'PASS' if penalty_ok else 'FAIL'}")
     print(f"  Items with plan_log   : {has_plan_log}  (expected: 1)")
 
-    print(f"\n  Output written to: {OUTPUT_PATH}")
+    print(f"\n  Output written to: {output_path}")
 
 
 if __name__ == "__main__":
