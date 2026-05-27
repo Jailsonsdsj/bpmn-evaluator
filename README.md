@@ -84,7 +84,7 @@ The other variables have working defaults and do not need to be changed for a fi
 python main.py \
   --diagram evaluation/dataset/diagram_001.json \
   --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
-  --enunciado evaluation/dataset/Instruções.txt
+  --enunciado evaluation/dataset/Instruções.txt \
   --output evaluation/results/
 ```
 
