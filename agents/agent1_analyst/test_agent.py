@@ -190,6 +190,7 @@ def test_agent1_default_to_absent_when_no_match() -> None:
 
     assert len(evidences) == 1
     assert evidences[0].status == "nao_cumprido"
+    assert "Não foi possível relacionar o critério" in evidences[0].observation
 
 
 def test_agent1_finds_elements_in_nested_structure() -> None:
@@ -307,3 +308,4 @@ def test_agent1_marks_not_applicable_for_pool_criteria_without_pools() -> None:
 
     assert evidences[0].status == "nao_aplicavel"
     assert evidences[0].value == 0.0
+    assert "não se aplica" in evidences[0].observation

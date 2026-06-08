@@ -262,11 +262,13 @@ class Agent1Analyst:
 
         if not candidates:
             target = str(expected_name or expected_type or criterion.description)
+            expectation = self._describe_expectation(expected_type=expected_type, expected_name=expected_name)
+            inspected = self._summarize_elements(elements)
             return self._build_evidence(
                 criterion,
                 status="nao_cumprido",
                 element=target,
-                observation=f"Elemento esperado não encontrado: {target}.",
+                observation=f"{expectation} não foi encontrado no diagrama. Elementos analisados: {inspected}.",
             )
 
         if exact_occ is not None and len(candidates) != int(exact_occ):
@@ -274,7 +276,11 @@ class Agent1Analyst:
                 criterion,
                 status="nao_cumprido",
                 element=self._element_ref(candidates[0]),
-                observation=f"Esperado exatamente {int(exact_occ)} ocorrência(s), encontrado {len(candidates)}.",
+                observation=(
+                    f"{self._describe_expectation(expected_type=expected_type, expected_name=expected_name)} "
+                    f"exigia exatamente {int(exact_occ)} ocorrência(s), mas foram encontradas {len(candidates)}. "
+                    f"Primeira ocorrência: {self._element_ref(candidates[0])}."
+                ),
             )
 
         if min_occ is not None and len(candidates) < int(min_occ):
@@ -282,7 +288,11 @@ class Agent1Analyst:
                 criterion,
                 status="nao_cumprido",
                 element=self._element_ref(candidates[0]),
-                observation=f"Esperado no mínimo {int(min_occ)} ocorrência(s), encontrado {len(candidates)}.",
+                observation=(
+                    f"{self._describe_expectation(expected_type=expected_type, expected_name=expected_name)} "
+                    f"exigia no mínimo {int(min_occ)} ocorrência(s), mas foram encontradas {len(candidates)}. "
+                    f"Primeira ocorrência: {self._element_ref(candidates[0])}."
+                ),
             )
 
         if max_occ is not None and len(candidates) > int(max_occ):
@@ -290,7 +300,11 @@ class Agent1Analyst:
                 criterion,
                 status="nao_cumprido",
                 element=self._element_ref(candidates[0]),
-                observation=f"Esperado no máximo {int(max_occ)} ocorrência(s), encontrado {len(candidates)}.",
+                observation=(
+                    f"{self._describe_expectation(expected_type=expected_type, expected_name=expected_name)} "
+                    f"permitia no máximo {int(max_occ)} ocorrência(s), mas foram encontradas {len(candidates)}. "
+                    f"Primeira ocorrência: {self._element_ref(candidates[0])}."
+                ),
             )
 
         connection_error = self._validate_connection_rules(candidates[0], raw)
@@ -299,7 +313,11 @@ class Agent1Analyst:
                 criterion,
                 status="nao_cumprido",
                 element=self._element_ref(candidates[0]),
-                observation=connection_error,
+                observation=(
+                    f"{self._describe_expectation(expected_type=expected_type, expected_name=expected_name)} "
+                    f"foi encontrado em {self._element_ref(candidates[0])}, mas a validação de conexões falhou: "
+                    f"{connection_error}"
+                ),
             )
 
         if raw.get("require_named_flows") is True:
@@ -366,21 +384,29 @@ class Agent1Analyst:
                     criterion,
                     status="nao_cumprido",
                     element=str(unnamed_flow.get("id", "sequenceFlow")),
-                    observation="Fluxo de sequência sem nome.",
+                    observation=(
+                        f"Foi encontrado um fluxo sem nome ({unnamed_flow.get('id', 'sequenceFlow')}) "
+                        f"para o critério '{criterion.description}'."
+                    ),
                 )
             first = flows[0] if flows else None
             return self._build_evidence(
                 criterion,
                 status="cumprido" if first else "nao_cumprido",
                 element=str(first.get("id")) if first else "sequenceFlow",
-                observation=None if first else "Nenhum fluxo de sequência encontrado.",
+                observation=None
+                if first
+                else f"Nenhum fluxo de sequência foi encontrado para o critério '{criterion.description}'.",
             )
 
         return self._build_evidence(
             criterion,
             status="nao_cumprido",
             element=criterion.description,
-            observation="Não foi possível identificar evidências para o critério no diagrama.",
+            observation=(
+                f"Não foi possível relacionar o critério '{criterion.description}' a padrões conhecidos "
+                f"do diagrama. Elementos analisados: {self._summarize_elements(elements)}."
+            ),
         )
 
     @staticmethod
@@ -420,12 +446,19 @@ class Agent1Analyst:
                 criterion,
                 status="cumprido",
                 element=Agent1Analyst._element_ref(candidates[0]),
+                observation=(
+                    f"Foi encontrado {len(candidates)} elemento(s) compatível(is) com "
+                    f"'{criterion.description}'. Principal ocorrência: {Agent1Analyst._element_ref(candidates[0])}."
+                ),
             )
         return Agent1Analyst._build_evidence(
             criterion,
             status="nao_cumprido",
             element=expected_label,
-            observation=f"Elemento esperado não encontrado: {expected_label}.",
+            observation=(
+                f"Não foi encontrado nenhum elemento compatível com '{criterion.description}'. "
+                f"Esperado algo como {expected_label}."
+            ),
         )
 
     @staticmethod
@@ -435,6 +468,7 @@ class Agent1Analyst:
         if name:
             return f"{name} ({element_id})"
         return element_id
+
     @staticmethod
     def _not_applicable_reason(
         elements: list[dict[str, Any]],
@@ -443,9 +477,9 @@ class Agent1Analyst:
     ) -> str | None:
         raw = criterion.raw
         if raw.get("nao_aplicavel") is True or raw.get("not_applicable") is True:
-            return "Marcado como não aplicável no checklist."
+            return f"O checklist marcou o critério '{criterion.description}' como não aplicável."
         if raw.get("aplicavel") is False or raw.get("applicable") is False:
-            return "Marcado como não aplicável no checklist."
+            return f"O checklist marcou o critério '{criterion.description}' como não aplicável."
 
         description = criterion.description.lower()
         has_pool = any(str(element.get("type")) == "pool" for element in elements)
@@ -460,16 +494,42 @@ class Agent1Analyst:
             or "messageflow" in description
             or "mensagem" in description
         ) and not (has_message_flow or has_pool or has_lane):
-            return "Diagrama não possui pools/raias ou fluxos de mensagem."
+            return (
+                f"O critério '{criterion.description}' não se aplica porque o diagrama não possui "
+                f"pools, raias ou fluxos de mensagem."
+            )
         if "pool" in description and not has_pool:
-            return "Diagrama não possui pool."
+            return f"O critério '{criterion.description}' não se aplica porque o diagrama não possui pool."
         if ("lane" in description or "raia" in description) and not has_lane:
-            return "Diagrama não possui raia."
+            return f"O critério '{criterion.description}' não se aplica porque o diagrama não possui raia."
         if (
             "subprocess" in description
             or "sub-processo" in description
             or "subprocesso" in description
         ) and not has_subprocess:
-            return "Diagrama não possui subprocesso."
+            return (
+                f"O critério '{criterion.description}' não se aplica porque o diagrama não possui subprocesso."
+            )
 
         return None
+
+    @staticmethod
+    def _describe_expectation(expected_type: str | None, expected_name: str | None) -> str:
+        parts: list[str] = []
+        if expected_type:
+            parts.append(f"tipo '{expected_type}'")
+        if expected_name:
+            parts.append(f'nome "{expected_name}"')
+        if not parts:
+            return "O critério"
+        return "O critério que espera " + " e ".join(parts)
+
+    @staticmethod
+    def _summarize_elements(elements: list[dict[str, Any]], limit: int = 4) -> str:
+        if not elements:
+            return "nenhum elemento"
+
+        summary = [Agent1Analyst._element_ref(element) for element in elements[:limit]]
+        if len(elements) > limit:
+            summary.append(f"... (+{len(elements) - limit} outros)")
+        return ", ".join(summary)
