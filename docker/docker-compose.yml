@@ -1,29 +1,46 @@
-services:
-  app:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    working_dir: /app
-    env_file:
-      - ../.env
-    volumes:
-      - ../evaluation:/app/evaluation
-      - ../mocks:/app/mocks
-    entrypoint: ["python"]
-    command: ["-m", "agents.agent1_analyst", "--help"]
-    stdin_open: true
-    tty: true
+# Shared config for every service. Each service either inherits the Dockerfile
+# entrypoint (`python main.py`, the full pipeline) or overrides it to run a single agent.
+x-common: &common
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile
+  working_dir: /app
+  env_file:
+    - ../.env
+  # The host evaluation/ is mounted in, so inputs are read from your working copy
+  # and result files are written back to evaluation/results/ on the host.
+  volumes:
+    - ../evaluation:/app/evaluation
+  # Interactive TTY so terminal prompts work (main.py's Human Review pause; the
+  # agents' --interactive mode).
+  stdin_open: true
+  tty: true
 
+services:
+  # Full pipeline — same as `python main.py` (Agent 1 → 2 → Human Review → 3).
+  # Inherits the Dockerfile ENTRYPOINT, so extra flags are forwarded to main.py:
+  #   docker compose -f docker/docker-compose.yml run --rm pipeline \
+  #     --diagram evaluation/dataset/diagram_001.json \
+  #     --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  #     --enunciado evaluation/dataset/Instruções.txt \
+  #     --output evaluation/results/
   pipeline:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    working_dir: /app
-    env_file:
-      - ../.env
-    volumes:
-      - ../evaluation:/app/evaluation
-      - ../mocks:/app/mocks
-    entrypoint: ""
-    stdin_open: true
-    tty: true
+    <<: *common
+
+  # Individual agents. Each overrides the entrypoint to bake in its module, so any
+  # flags after the service name are forwarded to that agent, e.g.:
+  #   docker compose -f docker/docker-compose.yml run --rm agent1 \
+  #     --diagram evaluation/dataset/diagram_001.json \
+  #     --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  #     --output evaluation/results/BPMNEvidence.json
+  agent1:
+    <<: *common
+    entrypoint: ["python", "-m", "agents.agent1_analyst"]
+
+  agent2:
+    <<: *common
+    entrypoint: ["python", "-m", "agents.agent2_evaluator"]
+
+  agent3:
+    <<: *common
+    entrypoint: ["python", "-m", "agents.agent3_feedback"]

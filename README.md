@@ -94,47 +94,48 @@ The pipeline will pause at the Human Review step and prompt you to edit `assessm
 
 ## Running with Docker
 
-```bash
-docker compose -f docker/docker-compose.yml run --rm pipeline
-```
+Docker runs the exact same pipeline as [Running the pipeline](#running-the-pipeline) — the container's entrypoint *is* `python main.py` (Agent 1 → 2 → 3) — so you don't need a local Python install. Any flags you pass are forwarded straight to `main.py`.
 
-The pipeline container runs the command after `#All` in `run_all.sh`.
-Update that line with the diagram/checklist/enunciado/assessment paths you want to run.
-
-When you click **Run** on the image in Docker Desktop, it also executes the same `#All` command from `run_all.sh`.
-
-**Required files (must exist inside the repo):**
-
-- Diagram: e.g. `evaluation/dataset/diagram_001.json`
-- Checklist: e.g. `evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv`
-- Enunciado: e.g. `evaluation/dataset/Instruções.txt`
-
-If any path in the `#All` command points to a missing file, the pipeline will fail with `FileNotFoundError`.
-
-Run Agent 1 only:
+First create your `.env` (see [Configure environment variables](#4-configure-environment-variables)); the container reads your API key from it.
 
 ```bash
-docker compose -f docker/docker-compose.yml run --rm app -m agents.agent1_analyst \
+docker compose -f docker/docker-compose.yml run --rm pipeline \
   --diagram evaluation/dataset/diagram_001.json \
-  --checklist evaluation/dataset/checklist.json \
-  --output evaluation/results
+  --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  --enunciado evaluation/dataset/Instruções.txt \
+  --output evaluation/results/
 ```
 
-Run Agent 2 (uses the default paths inside `__main__.py`):
+The flags are identical to the local run (omit them to use `main.py`'s default dataset paths). The `evaluation/` directory is mounted into the container, so input files are read from your working copy and results are written back to `evaluation/results/` on the host.
+
+As with the local run, the pipeline will pause at the Human Review step and prompt you to edit `BPMNAssessment.json` before continuing. The `pipeline` service runs with an interactive terminal so this prompt works inside Docker.
+
+### Running a single agent
+
+Each agent also has its own compose service (`agent1`, `agent2`, `agent3`) for running the stages one at a time. Flags after the service name are forwarded to that agent:
 
 ```bash
-docker compose -f docker/docker-compose.yml run --rm app -m agents.agent2_evaluator
-```
+# Agent 1 — writes evaluation/results/BPMNEvidence.json
+docker compose -f docker/docker-compose.yml run --rm agent1 \
+  --diagram evaluation/dataset/diagram_001.json \
+  --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  --output evaluation/results/BPMNEvidence.json
 
-Run Agent 3 (requires enunciado + assessment):
+# Agent 2 — reads evidence, writes evaluation/results/BPMNAssessment.json
+docker compose -f docker/docker-compose.yml run --rm agent2 \
+  --evidence evaluation/results/BPMNEvidence.json \
+  --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  --output evaluation/results/BPMNAssessment.json
 
-```bash
-docker compose -f docker/docker-compose.yml run --rm app -m agents.agent3_feedback \
+# Agent 3 — reads assessment, writes evaluation/results/BPMNFeedback.json
+docker compose -f docker/docker-compose.yml run --rm agent3 \
   --diagram evaluation/dataset/diagram_001.json \
   --enunciado evaluation/dataset/Instruções.txt \
   --assessment evaluation/results/BPMNAssessment.json \
-  --output evaluation/results
+  --output evaluation/results/BPMNFeedback.json
 ```
+
+See [docker/README.md](docker/README.md) for more detail.
 
 ---
 
