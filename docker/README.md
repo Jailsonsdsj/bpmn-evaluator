@@ -70,3 +70,6 @@ Notes:
   press ENTER to continue.
 - Required input files (must exist in the repo): a diagram JSON, the checklist CSV,
   and the enunciado TXT. A missing path makes the pipeline fail with `FileNotFoundError`.
+- Dependencies and agent code are baked into the image — rebuild after changing
+  `requirements.txt`, the agents, or the `Dockerfile`:
+  `docker compose -f docker/docker-compose.yml build` (or add `--build` to a `run`).

@@ -264,13 +264,29 @@ Valid element types: `startEvent`, `endEvent`, `task`, `userTask`, `serviceTask`
 
 ```bash
 # .env.example
-ANTHROPIC_API_KEY=your_api_key_here
+LLM_PROVIDER=anthropic          # anthropic | google_genai | openai | groq | mistralai | ollama
 MODEL_NAME=claude-sonnet-4-6
+ANTHROPIC_API_KEY=your_api_key_here
+# GEMINI_API_KEY / OPENAI_API_KEY / ... — set the one matching LLM_PROVIDER
 MAX_ITERATIONS=3
 CONFIDENCE_THRESHOLD=0.6
 ```
 
 Never hardcode the API key. Always load via `python-dotenv`.
+
+**Provider selection is centralized.** All agents build their chat model through
+`get_chat_model()` in `agents/shared_tools/llm.py` (a thin wrapper over LangChain's
+`init_chat_model`). Agents must NOT instantiate, e.g., `ChatAnthropic` / `ChatGoogleGenerativeAI`
+directly. `LLM_PROVIDER` chooses the provider; `MODEL_NAME` the model. Adding a provider
+means installing its `langchain-<provider>` package and setting the two env vars — no agent
+code changes. (Agent 1's image/PDF reader still uses the raw `anthropic` SDK for vision and
+is a separate concern.)
+
+**Local models.** Set `LLM_PROVIDER=ollama` (default host needs nothing else) or
+`LLM_PROVIDER=openai` with an OpenAI-compatible server (LM Studio / llama.cpp / vLLM).
+The optional `LLM_BASE_URL` env var is forwarded to the provider as `base_url` to point
+at a self-hosted endpoint (also required for Ollama reached from inside Docker). See the
+README "Local models" section.
 
 ---
 

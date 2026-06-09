@@ -8,15 +8,14 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-import langchain_google_genai
-from langchain_anthropic import ChatAnthropic
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.runnables import RunnableConfig
 import structlog
 from dotenv import load_dotenv
 
 from agents.contracts import BPMNAssessment, BPMNEvidence
+from agents.shared_tools.llm import get_chat_model
 
 load_dotenv()
 
@@ -70,26 +69,23 @@ def evaluate_once(
     evidence_list: list[BPMNEvidence],
     checklist: dict[str, dict[str, Any]],
     plan: str,
-    client: ChatAnthropic | ChatGoogleGenerativeAI | None = None,
+    client: BaseChatModel | None = None,
     model: str | None = None,
 ) -> list[BPMNAssessment]:
     """Single-pass evaluation: validate each Agent 1 finding with one LLM call.
 
     checklist is used ONLY for category_weight — penalties come from evidence.value.
     client and model may be injected (used by _reflect_loop and tests); when None
-    they are loaded from env. Returns empty list immediately for empty input.
+    they are loaded from env (provider chosen by LLM_PROVIDER). Returns empty list
+    immediately for empty input.
     """
     if not evidence_list:
         return []
 
     if model is None:
-        model = os.getenv("MODEL_NAME", "claude-opus-4-7")
+        model = os.getenv("MODEL_NAME", "")
     if client is None:
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if api_key:
-            client = ChatAnthropic(model_name=model, timeout=None, stop=[])
-        else:
-            client = ChatGoogleGenerativeAI(model=os.getenv("MODEL_NAME", "").strip(), temperature=0.7)
+        client = get_chat_model()
     threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
     logger = structlog.get_logger("evaluate_once")
 
@@ -158,7 +154,7 @@ def _reflect_loop(
     evidence_list: list[BPMNEvidence],
     checklist: dict[str, dict[str, Any]],
     plan: str,
-    client: ChatAnthropic | ChatGoogleGenerativeAI,
+    client: BaseChatModel,
     model: str,
     threshold: float,
     max_iterations: int,
@@ -237,7 +233,7 @@ def _critique_and_merge(
     assessments: list[BPMNAssessment],
     weak: list[BPMNAssessment],
     evidence_by_id: dict[str, BPMNEvidence],
-    client: ChatAnthropic | ChatGoogleGenerativeAI,
+    client: BaseChatModel,
     model: str,
     threshold: float,
 ) -> list[str]:
@@ -309,7 +305,7 @@ def _avg_confidence(assessments: list[BPMNAssessment]) -> float:
 # ---------------------------------------------------------------------------
 
 def _call_llm_json(
-    client: ChatAnthropic | ChatGoogleGenerativeAI,
+    client: BaseChatModel,
     model: str,
     system: str,
     messages: list[dict[str, Any]],
@@ -478,14 +474,10 @@ class Agent2Evaluator:
         from agents.agent2_evaluator.loaders import load_checklist
         from agents.agent2_evaluator.planning import generate_analysis_plan
 
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        model = os.getenv("MODEL_NAME", "claude-opus-4-7")
+        model = os.getenv("MODEL_NAME", "")
         threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
         max_iterations = int(os.getenv("MAX_ITERATIONS", "3"))
-        if api_key:
-            client = ChatAnthropic(model_name=model, timeout=None, stop=[])
-        else:
-            client = ChatGoogleGenerativeAI(model=os.getenv("MODEL_NAME", "").strip(), temperature=0.7)
+        client = get_chat_model()
 
         self.logger.info(
             "agent2.start",

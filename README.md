@@ -52,29 +52,81 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Open `.env` and fill in your Anthropic API key:
+Open `.env` and choose your provider with `LLM_PROVIDER`, set the matching model id, and fill in the API key for that provider.
+
+Anthropic (default):
 
 ```
-ANTHROPIC_API_KEY=sk-ant-...
+LLM_PROVIDER=anthropic
 MODEL_NAME=claude-sonnet-4-6
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-Or Google AI API key:
+Google AI (Gemini):
 
 ```
-GEMINI_API_KEY=...
+LLM_PROVIDER=google_genai
 MODEL_NAME=gemma-4-31b-it
+GEMINI_API_KEY=...
 ```
+
+OpenAI:
+
+```
+LLM_PROVIDER=openai
+MODEL_NAME=gpt-4o
+OPENAI_API_KEY=...
+```
+
+`LLM_PROVIDER` selects the LLM framework for all agents through a single shared factory (`agents/shared_tools/llm.py`), built on LangChain's `init_chat_model`. Any provider it supports works once you install that provider's package — `anthropic` and `google_genai` are installed by default; for others uncomment the matching line in `requirements.txt` (e.g. `langchain-openai`). The built-in shortcuts are `anthropic`, `google_genai`, `openai`, `groq`, `mistralai`, and `ollama`.
+
+> If `LLM_PROVIDER` is unset, the factory falls back to inferring the provider from whichever API key is present (backward compatibility).
 
 The other variables have working defaults and do not need to be changed for a first run:
 
 | Variable | Default | What it controls |
 |---|---|---|
-| `MODEL_NAME` | `claude-sonnet-4-6` | Claude/Google AI model used by all agents |
+| `LLM_PROVIDER` | `anthropic` | Which LLM provider all agents use |
+| `MODEL_NAME` | `claude-sonnet-4-6` | Model id for the selected provider |
 | `MAX_ITERATIONS` | `3` | Max Reflection loop iterations for Agent 2 |
 | `CONFIDENCE_THRESHOLD` | `0.6` | Minimum confidence before Agent 2 stops iterating |
 
 > **Never commit `.env`** — it is already in `.gitignore`.
+
+### Local models
+
+You can run entirely on local/self-hosted models — no API key, no network. Two routes:
+
+**Ollama** (simplest). Install [Ollama](https://ollama.com), pull a model, install the integration, then point `.env` at it:
+
+```bash
+ollama pull llama3.1
+pip install langchain-ollama
+```
+
+```
+LLM_PROVIDER=ollama
+MODEL_NAME=llama3.1
+```
+
+Local Ollama on its default `http://localhost:11434` needs nothing more. If Ollama runs on another host — or you run the pipeline **in Docker** (where `localhost` is the container, not your machine) — also set the endpoint:
+
+```
+LLM_BASE_URL=http://host.docker.internal:11434
+```
+
+**OpenAI-compatible server** (LM Studio, llama.cpp `server`, vLLM, text-generation-webui). These expose an OpenAI-style API, so use the `openai` provider pointed at the local URL:
+
+```
+LLM_PROVIDER=openai
+MODEL_NAME=<model id the server exposes>
+LLM_BASE_URL=http://localhost:1234/v1
+OPENAI_API_KEY=not-needed
+```
+
+> `OPENAI_API_KEY` must be a non-empty string — the OpenAI client requires one — but the local server ignores its value.
+
+`LLM_BASE_URL` is forwarded to the provider as `base_url`; it is optional and only needed to override the default endpoint.
 
 ---
 
@@ -133,6 +185,15 @@ docker compose -f docker/docker-compose.yml run --rm agent3 \
   --enunciado evaluation/dataset/Instruções.txt \
   --assessment evaluation/results/BPMNAssessment.json \
   --output evaluation/results/BPMNFeedback.json
+```
+
+### Rebuilding the image
+
+Dependencies and agent code are baked into the image, so rebuild after changes to `requirements.txt`, the agents, or the `Dockerfile` (all four services share one image). Files under `evaluation/` and `.env` are read at runtime and need no rebuild.
+
+```bash
+docker compose -f docker/docker-compose.yml build           # rebuild
+docker compose -f docker/docker-compose.yml run --build ...  # or rebuild + run in one step
 ```
 
 See [docker/README.md](docker/README.md) for more detail.
