@@ -9,14 +9,7 @@ from langchain_core.messages import SystemMessage
 from langchain_core.language_models import BaseChatModel
 from dataclasses import dataclass, asdict
 
-try:
-    from langchain_anthropic import ChatAnthropic
-except ImportError:
-    ChatAnthropic = None
-try:
-    from langchain_google_genai import ChatGoogleGenerativeAI
-except:
-    ChatGoogleGenerativeAI = None
+from agents.shared_tools.llm import supports_cache_control
 
 def map_assessment_system_message(enunciado: str, diagram: dict[str, Any]):
     return SystemMessage(
@@ -40,7 +33,7 @@ def map_assessment_system_message(enunciado: str, diagram: dict[str, Any]):
 )
 def map_assessment_chain(system_message: SystemMessage, llm: BaseChatModel, assessment: BPMNAssessment) -> str:
     messages = [system_message, ("user", f"Item com erro: <data>{json.dumps(asdict(assessment), ensure_ascii=False)}</data>")]
-    if type(llm) is ChatAnthropic:
+    if supports_cache_control(llm):
         response = llm.invoke(messages, cache_control={"type": "ephemeral"})
     else:
         response = llm.invoke(messages)

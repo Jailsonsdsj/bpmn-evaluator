@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 
-_DEFAULT_DIAGRAM    = ROOT / "evaluation" / "dataset" / "diagram-somnet.json"
+_DEFAULT_DIAGRAM    = ROOT / "evaluation" / "dataset" / "diagram_001.json"
 _DEFAULT_CHECKLIST  = ROOT / "evaluation" / "dataset" / "Checklist completo - Modelagem 1 - Básico.csv"
 _DEFAULT_ENUNCIADO  = ROOT / "evaluation" / "dataset" / "Instruções.txt"
 _DEFAULT_OUTPUT_DIR = ROOT / "evaluation" / "results"

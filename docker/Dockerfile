@@ -5,10 +5,13 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-COPY requirements.txt pyproject.toml ./
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT ["sh", "-lc"]
-CMD ["set -e; cmd=$(awk 'p {print; exit} /^#[[:space:]]*All/ {p=1}' /app/commands.txt | tr -d '\\r'); if [ -z \"$cmd\" ]; then echo \"Linha #All não encontrada em commands.txt\"; exit 1; fi; eval \"$cmd\""]
+# The container runs the full pipeline exactly like `python main.py`:
+# Agent 1 → Agent 2 → Human Review pause → Agent 3.
+# Any extra arguments (--diagram / --checklist / --enunciado / --output)
+# are forwarded straight to main.py.
+ENTRYPOINT ["python", "main.py"]

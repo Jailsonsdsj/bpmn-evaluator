@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
-import langchain_google_genai
-from langchain_anthropic import ChatAnthropic
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.runnables import RunnableConfig
 from dotenv import load_dotenv
 
 from agents.contracts import BPMNEvidence
+from agents.shared_tools.llm import get_chat_model
 
 load_dotenv()
 
@@ -29,17 +26,11 @@ Be concise and specific. The plan guides the evaluation — it is not a final ve
 
 
 def generate_analysis_plan(evidence_list: list[BPMNEvidence]) -> str:
-    """Call the Anthropic API once to produce a per-category analysis plan.
+    """Call the configured LLM once to produce a per-category analysis plan.
 
     Returns the plan as a plain string for storage in BPMNAssessment.plan_log.
     """
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    model = os.getenv("MODEL_NAME", "claude-opus-4-7")
-
-    if api_key:
-        client = ChatAnthropic(model_name=model, timeout=None, stop=[])
-    else:
-        client = ChatGoogleGenerativeAI(model=os.getenv("MODEL_NAME", "").strip(), temperature=0.7)
+    client = get_chat_model()
 
     summary = _build_evidence_summary(evidence_list)
 

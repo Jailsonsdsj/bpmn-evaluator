@@ -13,17 +13,9 @@ from agents.shared_tools.bpmn_internal.parser import *
 from agents.shared_tools.diagram.normalize import normalize_diagram
 from agents.shared_tools.diagram.reader import read_diagram_file
 
-try:
-    from langchain_anthropic import ChatAnthropic
-except ImportError:
-    ChatAnthropic = None
-try:
-    from langchain_google_genai import ChatGoogleGenerativeAI
-except:
-    ChatGoogleGenerativeAI = None
+from agents.shared_tools.llm import get_chat_model
 from .chains import map_assessment_system_message, map_assessment_chain
 from dotenv import load_dotenv
-import os
 from langchain_core.messages import SystemMessage
 
 
@@ -44,14 +36,8 @@ class Agent3Feedback:
     def run(self, payload: dict[str, Any]) -> BPMNFeedback:
         """Runs the mapper from in-memory payload."""
         load_dotenv()
-        if ChatGoogleGenerativeAI is not None and os.getenv("GEMINI_API_KEY", None) is not None:
-            llm = ChatGoogleGenerativeAI(model=os.getenv("MODEL_NAME", "").strip(), temperature=0.7)
-        elif ChatAnthropic is not None and os.getenv("ANTHROPIC_API_KEY", None) is not None:
-            llm = ChatAnthropic(model_name=os.getenv("MODEL_NAME", "").strip(), temperature=0.7, timeout=None, stop=[])
-        else:
-            print("NENHUMA API KEY VÁLIDA ENCONTRADA NO ENVIRONMENT OU FALTANDO LIBS NECESSÁRIAS (langchain_anthropic ou langchain_google_genai)")
-            exit(2)
-        
+        llm = get_chat_model()
+
         diagram = normalize_diagram(payload.get("diagram", {}))
         assessment: list[BPMNAssessment] = payload.get("assessment", {})
         enunciado: str = payload.get("enunciado", {})
