@@ -38,6 +38,7 @@ CRITICAL RULES:
 - For status "cumprido": confirm the element was correctly identified as met.
 - For status "nao_cumprido": confirm the criterion is truly unmet, not just overlooked.
 - For status "nao_aplicavel": confirm the criterion is genuinely out of scope.
+- For status "nao_avaliado": confirm that the criterion is marked as not evaluated (no penalty applies).
 """
 
 _CRITIQUE_SYSTEM_PROMPT = """\
@@ -117,7 +118,7 @@ def evaluate_once(
 
         applied_penalty = (
             0.0
-            if evidence.status in ("cumprido", "nao_aplicavel")
+            if evidence.status in ("cumprido", "nao_aplicavel", "nao_avaliado")
             else checklist_penalty  # nao_cumprido
         )
 
@@ -427,10 +428,12 @@ def build_output(
 
     summary: dict[str, Any] = {
         "total_criteria": len(assessments),
+        "criteria_evaluated": len([a for a in assessments if a.status != "nao_avaliado"]),
         "status_counts": {
             "cumprido": status_counts.get("cumprido", 0),
             "nao_cumprido": status_counts.get("nao_cumprido", 0),
             "nao_aplicavel": status_counts.get("nao_aplicavel", 0),
+            "nao_avaliado": status_counts.get("nao_avaliado", 0),
         },
         "items_for_review": items_for_review,
         "total_applied_penalty": total_applied,

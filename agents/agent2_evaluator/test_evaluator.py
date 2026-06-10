@@ -233,6 +233,21 @@ class TestAppliedPenalty:
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
     @patch("agents.agent2_evaluator.evaluator.get_chat_model")
+    def test_nao_avaliado_applied_penalty_is_zero(self, mock_cls: MagicMock, mock_json: MagicMock):
+        mock_cls.return_value.invoke.return_value = llm_response(
+            [{"criterion_id": "syntax_1", "justification": "not evaluated", "confidence": 0.5}]
+        )
+        mock_json.return_value = [
+            {"criterion_id": "syntax_1", "justification": "not evaluated", "confidence": 0.5}
+        ]
+        assessments = evaluate_once(
+            [make_evidence("syntax_1", "nao_avaliado", value=0.20)], CHECKLIST, "plan"
+        )
+        assert assessments[0].applied_penalty == 0.0
+        assert assessments[0].status == "nao_avaliado"
+
+    @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_nao_cumprido_applied_penalty_equals_value(self, mock_cls: MagicMock, mock_json: MagicMock):
         mock_cls.return_value.invoke.return_value = llm_response(
             [{"criterion_id": "syntax_1", "justification": "missing", "confidence": 0.7}]

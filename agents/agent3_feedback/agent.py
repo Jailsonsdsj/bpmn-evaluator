@@ -85,6 +85,10 @@ class Agent3Feedback:
         Returns:
             None | tuple[str, float, str]: Feedback personalizado, nota, questão
         """
+        # nao_avaliado items are excluded from feedback and grading
+        if assessment.status == "nao_avaliado":
+            return ("Não avaliado", 0.0, assessment.question or "")
+        
         if assessment.applied_penalty == 0.0:
             return ("Sem problemas", assessment.category_weight, assessment.question or "")
         else:

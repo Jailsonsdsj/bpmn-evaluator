@@ -72,6 +72,7 @@ def _build_evidence_summary(evidence_list: list[BPMNEvidence]) -> str:
         items = by_category[category]
         nao_cumprido = [e for e in items if e.status == "nao_cumprido"]
         nao_aplicavel = [e for e in items if e.status == "nao_aplicavel"]
+        nao_avaliado = [e for e in items if e.status == "nao_avaliado"]
         cumprido = [e for e in items if e.status == "cumprido"]
 
         lines.append(f"\n[{category.upper()}] ({len(items)} criteria)")
@@ -82,6 +83,8 @@ def _build_evidence_summary(evidence_list: list[BPMNEvidence]) -> str:
                 lines.append(f"    - [{e.criterion_id}] {e.question or e.element}{obs}")
         if nao_aplicavel:
             lines.append(f"  NAO_APLICAVEL ({len(nao_aplicavel)}): {', '.join(e.criterion_id for e in nao_aplicavel)}")
+        if nao_avaliado:
+            lines.append(f"  NAO_AVALIADO ({len(nao_avaliado)}): {', '.join(e.criterion_id for e in nao_avaliado)}")
         if cumprido:
             lines.append(f"  CUMPRIDO ({len(cumprido)}): {', '.join(e.criterion_id for e in cumprido)}")
 

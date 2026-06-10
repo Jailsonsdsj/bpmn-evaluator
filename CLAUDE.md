@@ -101,7 +101,7 @@ Individual penalties vary (0.1 to 0.8). The heaviest single item is "expected ga
 class BPMNEvidence:
     criterion_id: str
     category: str               # syntax | proposal | semantics | best_practices | readability
-    status: str                 # cumprido | nao_cumprido | nao_aplicavel
+    status: str                 # cumprido | nao_cumprido | nao_aplicavel | nao_avaliado
     value: float                # checklist penalty score to deduct if not met
     element: str | None         # name/id of the element in the diagram
     observation: str | None     # description of the problem (for nao_cumprido)
@@ -112,9 +112,9 @@ class BPMNAssessment:
     criterion_id: str
     category: str
     category_weight: float      # global weight of the category (e.g. 0.30 for syntax)
-    status: str                 # cumprido | nao_cumprido | nao_aplicavel
+    status: str                 # cumprido | nao_cumprido | nao_aplicavel | nao_avaliado
     checklist_penalty: float    # penalty value COPIED from the checklist (not computed)
-    applied_penalty: float      # 0.0 if cumprido/nao_aplicavel; equals checklist_penalty if nao_cumprido
+    applied_penalty: float      # 0.0 if cumprido/nao_aplicavel/nao_avaliado; equals checklist_penalty if nao_cumprido
     justification: str          # Agent 2's reasoning validating the finding
     confidence: float           # 0.0–1.0 (never inflate)
     flag_review: bool           # True if confidence < CONFIDENCE_THRESHOLD
@@ -126,6 +126,7 @@ Serialization: `dataclasses.asdict()` → `json.dumps()`. Reading: `json.loads()
 **Notes on the contract:**
 - `value` in `BPMNEvidence` carries the checklist penalty; Agent 2 copies it into `checklist_penalty`. The `status` field already encodes met/not-met, so a separate fractional value was redundant.
 - `nao_aplicavel` items always have `applied_penalty=0.0` — a criterion out of scope must NOT subtract points from the student.
+- `nao_avaliado` items always have `applied_penalty=0.0` — a criterion not evaluated must NOT subtract points or appear in grade calculations.
 - `checklist_penalty` is COPIED from the checklist CSV (via `BPMNEvidence.value`), never decided by the LLM.
 - The pre-written feedback sentence does NOT travel in `BPMNEvidence`. Agent 3 looks it up in the checklist CSV using `criterion_id`.
 
@@ -142,9 +143,9 @@ Serialization: `dataclasses.asdict()` → `json.dumps()`. Reading: `json.loads()
 **Prompt Chaining steps:**
 1. Load and structure the diagram JSON
 2. Load the checklist CSV by category
-3. Map each criterion → status (`cumprido` / `nao_cumprido` / `nao_aplicavel`)
+3. Map each criterion → status (`cumprido` / `nao_cumprido` / `nao_aplicavel` / `nao_avaliado`)
 
-**Critical rule:** Agent 1 may only reference elements present in the input JSON. Zero hallucinations of nonexistent elements. Criteria that the diagram's characteristics do not reach get `nao_aplicavel` (e.g. message-flow criteria in a single-pool diagram).
+**Critical rule:** Agent 1 may only reference elements present in the input JSON. Zero hallucinations of nonexistent elements. Criteria that the diagram's characteristics do not reach get `nao_aplicavel` (e.g. message-flow criteria in a single-pool diagram). Items marked as not-evaluated in the checklist get `nao_avaliado`.
 
 **Output:** list of `BPMNEvidence` serialized as JSON.
 
@@ -157,9 +158,9 @@ Serialization: `dataclasses.asdict()` → `json.dumps()`. Reading: `json.loads()
 **Responsibility (REDUCED scope):** receive `BPMNEvidence` and produce `BPMNAssessment`. The agent does **NOT invent penalties** — it copies `checklist_penalty` from the checklist. Its real job is:
 
 1. **Validate** whether Agent 1's finding is correct ("did A1 correctly judge this criterion as not met?")
-2. **Resolve `nao_aplicavel` cases** correctly — confirm a criterion is genuinely out of scope
+2. **Resolve `nao_aplicavel` and `nao_avaliado` cases** correctly — confirm a criterion is genuinely out of scope or not evaluated
 3. **Assign a confidence score** (0.0–1.0) per item
-4. Copy `checklist_penalty` and set `applied_penalty` (0.0 for cumprido/nao_aplicavel, equal to penalty for nao_cumprido)
+4. Copy `checklist_penalty` and set `applied_penalty` (0.0 for cumprido/nao_aplicavel/nao_avaliado, equal to penalty for nao_cumprido)
 
 **Patterns:** Planning (per-category analysis plan before validating), Reflection Producer-Critic (self-critique loop).
 
