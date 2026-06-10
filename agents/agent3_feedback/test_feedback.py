@@ -92,7 +92,7 @@ def bad_response(text: str = "not valid json {{{") -> MagicMock:
     return response
 
 
-DIAGRAM_PATH = "evaluation/dataset/diagram-somnet.json"
+DIAGRAM_PATH = "evaluation/dataset/diagram_001.json"
 ENUNCIADO_PATH = "evaluation/dataset/Instruções.txt"
 
 # ---------------------------------------------------------------------------
@@ -106,7 +106,8 @@ ENUNCIADO_PATH = "evaluation/dataset/Instruções.txt"
 
 class TestAppliedPenalty:
     @patch("agents.agent3_feedback.agent.map_assessment_chain")
-    def test_cumprido_applied_grade_is_correct(self, mock_chain):
+    @patch("agents.agent3_feedback.agent.get_chat_model")
+    def test_cumprido_applied_grade_is_correct(self, mock_get_llm, mock_chain):
         mock_chain.return_value = "Correto"
         path = make_assessments([make_assessment("syntax_1", "cumprido", checklist_penalty=0.20)])
         agent = Agent3Feedback()
@@ -116,7 +117,8 @@ class TestAppliedPenalty:
         assert feedbacks.grades_and_feedbacks[0][0].value == 0.8
 
     @patch("agents.agent3_feedback.agent.map_assessment_chain")
-    def test_mixed_statuses_in_one_call(self, mock_cls):
+    @patch("agents.agent3_feedback.agent.get_chat_model")
+    def test_mixed_statuses_in_one_call(self, mock_get_llm, mock_cls):
         mock_cls.side_effect = [
             "não ok",
             "ok",

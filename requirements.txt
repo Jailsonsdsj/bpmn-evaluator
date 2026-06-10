@@ -3,7 +3,13 @@ pymupdf>=1.24
 python-dotenv
 structlog
 pytest
-langchain
+langchain>=0.3
+# Provider integrations. Install the one(s) matching LLM_PROVIDER.
+# anthropic and google_genai ship by default; uncomment others as needed.
 langchain-anthropic
 langchain-google-genai
+langchain-openai
+# langchain-groq
+# langchain-mistralai
+# langchain-ollama
 

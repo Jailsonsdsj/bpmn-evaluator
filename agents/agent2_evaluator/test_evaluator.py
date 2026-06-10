@@ -204,7 +204,7 @@ class TestBuildOutput:
 
 class TestAppliedPenalty:
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_cumprido_applied_penalty_is_zero(self, mock_cls: MagicMock, mock_json: MagicMock):
         mock_cls.return_value.invoke.return_value = llm_response(
             [{"criterion_id": "syntax_1", "justification": "ok", "confidence": 0.8}]
@@ -218,7 +218,7 @@ class TestAppliedPenalty:
         assert assessments[0].applied_penalty == 0.0
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_nao_aplicavel_applied_penalty_is_zero(self, mock_cls: MagicMock, mock_json: MagicMock):
         mock_cls.return_value.invoke.return_value = llm_response(
             [{"criterion_id": "syntax_1", "justification": "ok", "confidence": 0.9}]
@@ -232,7 +232,7 @@ class TestAppliedPenalty:
         assert assessments[0].applied_penalty == 0.0
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_nao_cumprido_applied_penalty_equals_value(self, mock_cls: MagicMock, mock_json: MagicMock):
         mock_cls.return_value.invoke.return_value = llm_response(
             [{"criterion_id": "syntax_1", "justification": "missing", "confidence": 0.7}]
@@ -246,7 +246,7 @@ class TestAppliedPenalty:
         assert assessments[0].applied_penalty == pytest.approx(0.20)
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_checklist_penalty_comes_from_evidence_value_not_checklist_dict(self, mock_cls: MagicMock, mock_json: MagicMock):
         """evidence.value=0.35 wins over CHECKLIST dict's 0.20."""
         mock_cls.return_value.invoke.return_value = llm_response(
@@ -262,7 +262,7 @@ class TestAppliedPenalty:
         assert assessments[0].applied_penalty == pytest.approx(0.35)
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_mixed_statuses_in_one_call(self, mock_cls: MagicMock, mock_json: MagicMock):
         mock_cls.return_value.invoke.return_value = llm_response([
             {"criterion_id": "syntax_1", "justification": "ok", "confidence": 0.8},
@@ -292,7 +292,7 @@ class TestAppliedPenalty:
 
 class TestFlagReview:
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_flag_true_below_threshold(self, mock_cls: MagicMock, mock_json: MagicMock):
         mock_cls.return_value.invoke.return_value = llm_response(
             [{"criterion_id": "syntax_1", "justification": "ok", "confidence": 0.59}]
@@ -307,7 +307,7 @@ class TestFlagReview:
         assert assessments[0].flag_review is True
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_flag_false_at_threshold(self, mock_cls: MagicMock, mock_json: MagicMock):
         mock_cls.return_value.invoke.return_value = llm_response(
             [{"criterion_id": "syntax_1", "justification": "ok", "confidence": 0.6}]
@@ -322,7 +322,7 @@ class TestFlagReview:
 
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_flag_false_above_threshold(self, mock_cls: MagicMock, mock_json: MagicMock):
         mock_cls.return_value.invoke.return_value = llm_response(
             [{"criterion_id": "syntax_1", "justification": "ok", "confidence": 0.95}]
@@ -336,7 +336,7 @@ class TestFlagReview:
         assert assessments[0].flag_review is False
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_flag_review_consistent_with_confidence_for_all_items(self, mock_cls: MagicMock, mock_json: MagicMock):
         mock_cls.return_value.invoke.return_value = llm_response([
             {"criterion_id": "syntax_1", "justification": "ok", "confidence": 0.3},
@@ -457,15 +457,15 @@ class TestReflectLoop:
 # ---------------------------------------------------------------------------
 
 class TestErrorHandling:
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_empty_evidence_returns_empty_no_api_call(self, mock_cls: MagicMock):
         assessments = evaluate_once([], {}, "plan")
         assert assessments == []
-        mock_cls.return_value.invoke.assert_not_called()
+        mock_cls.assert_not_called()  # no model built when there is no evidence
 
     # TODO: retry not working
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_invalid_json_retries_once_then_succeeds(self, mock_cls: MagicMock, mock_json: MagicMock):
         """First response is invalid JSON; second is valid — exactly 2 API calls made."""
         mock_cls.return_value.invoke.side_effect = [
@@ -486,7 +486,7 @@ class TestErrorHandling:
         assert assessments[0].confidence == pytest.approx(0.7)
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_persistent_invalid_json_returns_graceful_defaults(self, mock_cls: MagicMock, mock_json: MagicMock):
         """Both attempts return invalid JSON — no crash, assessment uses defaults."""
         mock_cls.return_value.invoke.return_value = bad_response()
@@ -503,7 +503,7 @@ class TestErrorHandling:
         assert a.applied_penalty == pytest.approx(0.20)
 
     @patch("agents.agent2_evaluator.evaluator.JsonOutputParser.invoke")
-    @patch("agents.agent2_evaluator.evaluator.ChatGoogleGenerativeAI")
+    @patch("agents.agent2_evaluator.evaluator.get_chat_model")
     def test_missing_checklist_entry_uses_zero_weight_no_crash(self, mock_cls: MagicMock, mock_json: MagicMock):
         """Criterion absent from checklist dict gets category_weight=0.0, no crash."""
         mock_cls.return_value.invoke.return_value = llm_response(
