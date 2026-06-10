@@ -101,6 +101,8 @@ class Agent1Analyst:
             base = "Critério atendido"
         elif normalized == "nao_cumprido":
             base = "Critério não atendido"
+        elif normalized == "nao_avaliado":
+            base = "Critério não avaliado"
         else:
             base = "Critério não aplicável"
 
@@ -376,11 +378,13 @@ class Agent1Analyst:
                 observation=None if first else "Nenhum fluxo de sequência encontrado.",
             )
 
+        # Se nenhuma heurística textual funcionou, marcar como não avaliado
+        # (não há evidência suficiente, não pode-se dizer que falha)
         return self._build_evidence(
             criterion,
-            status="nao_cumprido",
+            status="nao_avaliado",
             element=criterion.description,
-            observation="Não foi possível identificar evidências para o critério no diagrama.",
+            observation="Não foi possível coletar evidências suficientes para avaliar este critério.",
         )
 
     @staticmethod

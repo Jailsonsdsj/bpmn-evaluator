@@ -145,7 +145,14 @@ Serialization: `dataclasses.asdict()` → `json.dumps()`. Reading: `json.loads()
 2. Load the checklist CSV by category
 3. Map each criterion → status (`cumprido` / `nao_cumprido` / `nao_aplicavel` / `nao_avaliado`)
 
-**Critical rule:** Agent 1 may only reference elements present in the input JSON. Zero hallucinations of nonexistent elements. Criteria that the diagram's characteristics do not reach get `nao_aplicavel` (e.g. message-flow criteria in a single-pool diagram). Items marked as not-evaluated in the checklist get `nao_avaliado`.
+**Critical rule:** Agent 1 may only reference elements present in the input JSON. Zero hallucinations of nonexistent elements. 
+- Criteria that the diagram's characteristics do not reach get `nao_aplicavel` (e.g. message-flow criteria in a single-pool diagram)
+- Items with explicit mappings that fail clearly get `nao_cumprido` (e.g. "element X requires outgoing flow but has none")
+- Items marked as not-evaluated in the checklist OR items that are too vague for textual heuristics to match get `nao_avaliado` — these require human review
+
+**`nao_avaliado` vs `nao_cumprido`:**
+- `nao_cumprido`: There is clear, verifiable evidence that the criterion is NOT met (e.g., expected element is missing, constraint is violated)
+- `nao_avaliado`: The criterion is so vague or undefined that Agent 1 cannot collect sufficient evidence to make a judgment call. Agent 2 will flag these for human review.
 
 **Output:** list of `BPMNEvidence` serialized as JSON.
 

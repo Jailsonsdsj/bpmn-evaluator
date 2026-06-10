@@ -7,7 +7,7 @@ class BPMNEvidence:
     category: str# syntax | proposal | semantics | best_practices | readability 
     status: str # cumprido | nao_cumprido | nao_aplicavel | nao_avaliado
     value: float # checklist penalty score to deduct if not met
-    element: str
+    element: str | None = None
     observation: str | None = None
     question: str | None = None
 
@@ -23,7 +23,7 @@ class BPMNAssessment:
     justification: str
     confidence: float
     flag_review: bool
-    element: str
+    element: str | None = None
     plan_log: str | None = None
     question: str | None = None
     

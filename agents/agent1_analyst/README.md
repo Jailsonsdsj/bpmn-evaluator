@@ -1,7 +1,7 @@
 # Agent 1 — Criteria Mapper
 
 Receives the BPMN diagram JSON and the evaluation checklist.
-For each criterion, maps whether the corresponding element is cumprido, nao_cumprido, or nao_aplicavel.
+For each criterion, maps whether the corresponding element is cumprido, nao_cumprido, nao_aplicavel, or nao_avaliado.
 Outputs a list of `BPMNEvidence` objects — no judgment, only evidence mapping.
 
 ## Implementação
@@ -19,13 +19,23 @@ Outputs a list of `BPMNEvidence` objects — no judgment, only evidence mapping.
 
 O `BPMNEvidence` inclui `value` (0–1) com base na pontuação do checklist:
 
-- Quando o checklist fornece pontuação, `value = pontuação` se `cumprido` e `value = 0.0` se `nao_cumprido/nao_aplicavel`.
-- Se não houver pontuação no checklist, o fallback é: `cumprido = 1.0`, `nao_cumprido = 0.0`, `nao_aplicavel = 0.0`.
+- Quando o checklist fornece pontuação, `value = pontuação` se `cumprido` e `value = 0.0` se `nao_cumprido/nao_aplicavel/nao_avaliado`.
+- Se não houver pontuação no checklist, o fallback é: `cumprido = 1.0`, `nao_cumprido = 0.0`, `nao_aplicavel = 0.0`, `nao_avaliado = 0.0`.
+
+### Significado dos Status
+
+- **`cumprido`**: Critério claramente atendido no diagrama
+- **`nao_cumprido`**: Critério não atendido; há evidência clara de falha
+- **`nao_aplicavel`**: Critério não se aplica a este diagrama (ex: critério sobre pools em diagrama sem pools)
+- **`nao_avaliado`**: Critério não pôde ser avaliado; Agent 1 não conseguiu coletar evidências suficientes para julgar (requer análise manual ou critério muito vago)
 
 ### Campo `observation`
 
-Quando não há observação específica, o Agent 1 gera uma mensagem padrão baseada no status e na pontuação.
-Para `nao_cumprido/nao_aplicavel`, a mensagem inclui o motivo quando disponível.
+Quando não há observação específica, o Agent 1 gera uma mensagem padrão baseada no status:
+- Para `cumprido`: "Critério atendido"
+- Para `nao_cumprido`: "Critério não atendido" + motivo se disponível
+- Para `nao_aplicavel`: "Critério não aplicável" + razão
+- Para `nao_avaliado`: "Critério não avaliado" + explicação de que não há evidência
 
 ### Exemplo rápido
 
