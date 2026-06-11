@@ -557,6 +557,7 @@ class Agent1Analyst:
         if (
             "link event" in description
             or "evento de link" in description
+            or "eventos de link" in description
         ) and not has_link_event:
             return "Diagrama não possui eventos de link."
         
@@ -564,6 +565,7 @@ class Agent1Analyst:
         if (
             "flow is interrupted" in description
             or "fluxo é interrompido" in description
+            or "fluxo interrompido" in description
             or "interrompido" in description
         ) and not has_interrupting_flow:
             return "Diagrama não possui fluxos interrompidos."
