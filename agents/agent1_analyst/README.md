@@ -29,6 +29,24 @@ O `BPMNEvidence` inclui `value` (0–1) com base na pontuação do checklist:
 - **`nao_aplicavel`**: Critério não se aplica a este diagrama (ex: critério sobre pools em diagrama sem pools)
 - **`nao_avaliado`**: Critério não pôde ser avaliado; Agent 1 não conseguiu coletar evidências suficientes para julgar (requer análise manual ou critério muito vago)
 
+#### Distinção crítica: `nao_aplicavel` vs `nao_cumprido`
+
+**Regra de ouro:** Um critério é `nao_aplicavel` quando **o elemento de referência não existe no diagrama**.
+
+| Cenário | Status | Motivo |
+|---------|--------|--------|
+| Critério: "Link events have names?" <br/> Diagrama: Sem eventos de link | `nao_aplicavel` | Elemento de referência (link events) não existe |
+| Critério: "Link events have names?" <br/> Diagrama: Tem link events, mas sem nomes | `nao_cumprido` | Elemento existe, mas não atende critério |
+| Critério: "Activities in different lanes?" <br/> Diagrama: Sem raias | `nao_aplicavel` | Elemento de referência (lanes) não existe |
+| Critério: "Activities in different lanes?" <br/> Diagrama: Tem raias, mas activities em mesma raia | `nao_cumprido` | Elemento existe, mas não atende critério |
+| Critério: "End event for interrupting flow?" <br/> Diagrama: Sem fluxos interrompidos | `nao_aplicavel` | Elemento de referência (interrupting flows) não existe |
+| Critério: "End event for interrupting flow?" <br/> Diagrama: Tem fluxo interrompido, mas sem end event | `nao_cumprido` | Elemento existe, mas não atende critério |
+
+**Exemplos do checklist curso:**
+- **SI14** ("Todas as atividades em raias diferentes?"): Se diagrama não tem raias → `nao_aplicavel`
+- **SI7** ("End event quando fluxo interrompido?"): Se diagrama não tem fluxos interrompidos → `nao_aplicavel`
+- **SI16** ("Link events have names?"): Se diagrama não tem link events → `nao_aplicavel`
+
 ### Campo `observation`
 
 Quando não há observação específica, o Agent 1 gera uma mensagem padrão baseada no status:

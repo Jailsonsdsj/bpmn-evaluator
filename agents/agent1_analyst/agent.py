@@ -68,7 +68,7 @@ class Agent1Analyst:
     def _build_evidence(
         criterion: Criterion,
         status: str,
-        element: str,
+        element: str | None,
         observation: str | None = None,
     ) -> BPMNEvidence:
         value = Agent1Analyst._value_for_status(status, criterion.raw)
@@ -85,14 +85,19 @@ class Agent1Analyst:
 
     @staticmethod
     def _value_for_status(status: str, raw: dict[str, Any]) -> float:
+        """Get the penalty value from checklist for the criterion.
+        
+        Value is ALWAYS the checklist penalty, regardless of status:
+        - cumprido: use checklist penalty value
+        - nao_cumprido: use checklist penalty value (will be applied as penalty)
+        - nao_aplicavel: use checklist penalty value (won't be applied)
+        - nao_avaliado: use checklist penalty value (won't be applied)
+        """
         score = Agent1Analyst._criterion_score(raw)
-        if score is None:
-            return Agent1Analyst._status_value(status)
-
-        normalized = status.lower()
-        if normalized == "cumprido":
+        if score is not None:
             return score
-        return 0.0
+        
+        return Agent1Analyst._status_value(status)
 
     @staticmethod
     def _format_observation(status: str, value: float | None, reason: str | None) -> str:
@@ -212,6 +217,22 @@ class Agent1Analyst:
         return criteria
 
     def _map_criterion(self, diagram: dict[str, Any], criterion: Criterion) -> BPMNEvidence:
+        """Map a single criterion to evidence status.
+        
+        Decision flow:
+        1. Check if criterion is not applicable to this diagram type
+           → Returns nao_aplicavel (e.g., pool criteria when no pools exist)
+        2. Check explicit field mappings (element_type, element_name, occurrences, connections)
+           → Returns cumprido, nao_cumprido based on structural constraints
+        3. Apply textual heuristics (keyword matching on description)
+           → Returns cumprido, nao_cumprido, or nao_avaliado
+        
+        Key distinction:
+        - nao_aplicavel: The criterion's REFERENCE ELEMENT doesn't exist in this diagram type
+          Examples: "link events" when no link events in diagram → nao_aplicavel
+        - nao_cumprido: The reference element EXISTS but violates the criterion
+          Examples: "link event without name" when link events exist but are unnamed → nao_cumprido
+        """
         elements = diagram.get("elements", [])
         flows = diagram.get("flows", [])
 
@@ -244,6 +265,28 @@ class Agent1Analyst:
         flows: list[dict[str, Any]],
         criterion: Criterion,
     ) -> BPMNEvidence | None:
+        """Map criterion using explicit field definitions from checklist.
+        
+        Explicit fields allow precise matching:
+        - element_type: Expected BPMN element type (e.g., "startEvent", "exclusiveGateway")
+        - element_name: Expected element name/label
+        - occurrences: Exact, min, max count constraints
+        
+        Decision logic:
+        - No explicit fields defined → return None (use textual heuristics)
+        - Explicit fields defined but NO matching candidates:
+          → nao_cumprido (reference element doesn't exist in diagram)
+        - Candidates exist but violate constraints:
+          → nao_cumprido (element exists but criteria not met)
+        - Candidates exist and all constraints satisfied:
+          → cumprido
+        
+        Example:
+        - Criterion: element_type="startEvent" → find all startEvents
+        - No startEvents found → nao_cumprido ("Start event not found")
+        - StartEvent found but has no outgoing flow → nao_cumprido ("Start event has no output flow")
+        - StartEvent exists and has outgoing flow → cumprido
+        """
         raw = criterion.raw
         expected_type = raw.get("element_type") or raw.get("tipo_elemento") or raw.get("expected_type")
         expected_name = raw.get("element_name") or raw.get("nome_elemento") or raw.get("expected_name")
@@ -445,7 +488,23 @@ class Agent1Analyst:
         flows: list[dict[str, Any]],
         criterion: Criterion,
     ) -> str | None:
+        """Determine if a criterion is not applicable to this diagram.
+        
+        A criterion is nao_aplicavel when its REFERENCE ELEMENT TYPE doesn't exist:
+        - Criterion about "link events" → not applicable if diagram has no link events
+        - Criterion about "pools" → not applicable if diagram has no pools
+        - Criterion about "interrupting flows" → not applicable if diagram has no interrupting flows
+        
+        Examples from course checklist:
+        - SI14: "Activities in different lanes?" → nao_aplicavel if no lanes exist
+        - SI7: "End event when flow interrupted?" → nao_aplicavel if no interrupting flows
+        - SI16: "Link events have names?" → nao_aplicavel if no link events exist
+        
+        Returns: str (reason why not applicable) or None (criterion is applicable)
+        """
         raw = criterion.raw
+        
+        # Explicit not_applicable marks from checklist metadata
         if raw.get("nao_aplicavel") is True or raw.get("not_applicable") is True:
             return "Marcado como não aplicável no checklist."
         if raw.get("aplicavel") is False or raw.get("applicable") is False:
@@ -458,22 +517,55 @@ class Agent1Analyst:
         has_message_flow = any(
             str(flow.get("type", "")).lower() in {"messageflow", "message_flow"} for flow in flows
         )
+        has_link_event = any(
+            str(element.get("type")).lower() in {"linkcatchevent", "linkthrowevent"} 
+            for element in elements
+        )
+        
+        # Interrupting flows: flows that terminate the process early (rare in single-pool diagrams)
+        has_interrupting_flow = any(
+            flow.get("is_interrupting") is True or 
+            str(flow.get("type", "")).lower() == "interruptingflow"
+            for flow in flows
+        )
 
+        # Message flow criteria → not applicable if no pools/lanes AND no message flows
         if (
             "message flow" in description
             or "messageflow" in description
             or "mensagem" in description
         ) and not (has_message_flow or has_pool or has_lane):
             return "Diagrama não possui pools/raias ou fluxos de mensagem."
+        
+        # Pool criteria → not applicable if no pools
         if "pool" in description and not has_pool:
             return "Diagrama não possui pool."
+        
+        # Lane criteria → not applicable if no lanes
         if ("lane" in description or "raia" in description) and not has_lane:
             return "Diagrama não possui raia."
+        
+        # Subprocess criteria → not applicable if no subprocesses
         if (
             "subprocess" in description
             or "sub-processo" in description
             or "subprocesso" in description
         ) and not has_subprocess:
             return "Diagrama não possui subprocesso."
+        
+        # Link event criteria → not applicable if no link events
+        if (
+            "link event" in description
+            or "evento de link" in description
+        ) and not has_link_event:
+            return "Diagrama não possui eventos de link."
+        
+        # Interrupting flow criteria → not applicable if no interrupting flows
+        if (
+            "flow is interrupted" in description
+            or "fluxo é interrompido" in description
+            or "interrompido" in description
+        ) and not has_interrupting_flow:
+            return "Diagrama não possui fluxos interrompidos."
 
         return None

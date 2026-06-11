@@ -138,21 +138,35 @@ Serialization: `dataclasses.asdict()` → `json.dumps()`. Reading: `json.loads()
 
 **Responsibility:** receive the diagram JSON and the checklist CSV; for each criterion, check whether it is met in the diagram. **Does not emit judgment or scoring** — only reports findings.
 
-**Patterns:** Prompt Chaining (3 chained steps), Tool Use (JSON + CSV file reading).
+**Patterns:** Deterministic mapping with textual heuristics and explicit field matching.
 
-**Prompt Chaining steps:**
-1. Load and structure the diagram JSON
-2. Load the checklist CSV by category
-3. Map each criterion → status (`cumprido` / `nao_cumprido` / `nao_aplicavel` / `nao_avaliado`)
+**Decision flow:**
+1. Check if criterion is **not applicable** to this diagram type → `nao_aplicavel`
+2. Check **explicit field mappings** (element_type, element_name, occurrences, connections) → `cumprido` or `nao_cumprido`
+3. Apply **textual heuristics** (keyword matching on description) → `cumprido`, `nao_cumprido`, or `nao_avaliado`
+
+**Critical distinction: `nao_aplicavel` vs `nao_cumprido`**
+
+A criterion is **`nao_aplicavel`** when its **REFERENCE ELEMENT TYPE doesn't exist** in the diagram:
+- Criterion: "Link events have names?" → `nao_aplicavel` if diagram has no link events
+- Criterion: "Activities in different lanes?" → `nao_aplicavel` if diagram has no lanes
+- Criterion: "End event for interrupting flow?" → `nao_aplicavel` if diagram has no interrupting flows
+
+A criterion is **`nao_cumprido`** when the reference element EXISTS but violates the criterion:
+- Criterion: "Link events have names?" + diagram has link events but unnamed → `nao_cumprido`
+- Criterion: "Activities in different lanes?" + diagram has lanes but activities in same lane → `nao_cumprido`
+- Criterion: "End event for interrupting flow?" + diagram has interrupting flow but no end event → `nao_cumprido`
+
+**Real examples from course checklist:**
+- **SI14** ("Todas as atividades em raias diferentes?"): No lanes in diagram → `nao_aplicavel` | Lanes exist but activities share lane → `nao_cumprido`
+- **SI7** ("Evento de término quando fluxo interrompido?"): No interrupting flows → `nao_aplicavel` | Interrupting flow exists without end event → `nao_cumprido`
+- **SI16** ("Eventos de link têm nome?"): No link events → `nao_aplicavel` | Link events exist but unnamed → `nao_cumprido`
+
+**Other status values:**
+- **`cumprido`**: Criterion clearly met in diagram
+- **`nao_avaliado`**: Criterion is too vague; Agent 1 cannot collect sufficient evidence (requires manual review by Agent 2)
 
 **Critical rule:** Agent 1 may only reference elements present in the input JSON. Zero hallucinations of nonexistent elements. 
-- Criteria that the diagram's characteristics do not reach get `nao_aplicavel` (e.g. message-flow criteria in a single-pool diagram)
-- Items with explicit mappings that fail clearly get `nao_cumprido` (e.g. "element X requires outgoing flow but has none")
-- Items marked as not-evaluated in the checklist OR items that are too vague for textual heuristics to match get `nao_avaliado` — these require human review
-
-**`nao_avaliado` vs `nao_cumprido`:**
-- `nao_cumprido`: There is clear, verifiable evidence that the criterion is NOT met (e.g., expected element is missing, constraint is violated)
-- `nao_avaliado`: The criterion is so vague or undefined that Agent 1 cannot collect sufficient evidence to make a judgment call. Agent 2 will flag these for human review.
 
 **Output:** list of `BPMNEvidence` serialized as JSON.
 
