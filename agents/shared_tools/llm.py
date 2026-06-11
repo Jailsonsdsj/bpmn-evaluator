@@ -77,7 +77,7 @@ def _prepare_credentials(provider: str) -> None:
 
 def get_chat_model(
     *,
-    temperature: float | None = None,
+    temperature: 0,
     max_tokens: int | None = None,
     **overrides: object,
 ) -> BaseChatModel:

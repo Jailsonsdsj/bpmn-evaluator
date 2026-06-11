@@ -18,6 +18,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--diagram", type=str, help="Caminho do diagrama BPMN (.json, .pdf, .png, .jpg).")
     parser.add_argument("--checklist", type=str, help="Caminho do checklist (.json, .txt ou .csv).")
     parser.add_argument(
+        "--enunciado",
+        type=str,
+        default=None,
+        help="Caminho do enunciado/instruções do processo (.txt). Necessário para critérios P1-P5 e BP6.",
+    )
+    parser.add_argument(
         "--output",
         type=str,
         help="Diretório opcional para salvar a saída (arquivo fixo: BPMNEvidence.json).",
@@ -195,8 +201,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     agent = Agent1Analyst()
+    enunciado_path = getattr(args, "enunciado", None)
     try:
-        evidences = agent.run_from_files(diagram_path, checklist_path)
+        evidences = agent.run_from_files(diagram_path, checklist_path, enunciado_path=enunciado_path)
     except ValueError as exc:
         print(f"Erro: {exc}")
         return 2
