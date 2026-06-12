@@ -5,8 +5,6 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
-evaluation/dataset
-evaluation/results
 
 # macOS
 .DS_Store

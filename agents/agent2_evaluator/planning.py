@@ -30,7 +30,7 @@ def generate_analysis_plan(evidence_list: list[BPMNEvidence]) -> str:
 
     Returns the plan as a plain string for storage in BPMNAssessment.plan_log.
     """
-    client = get_chat_model()
+    client = get_chat_model(temperature=0)
 
     summary = _build_evidence_summary(evidence_list)
 

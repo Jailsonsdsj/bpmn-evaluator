@@ -86,7 +86,7 @@ def evaluate_once(
     if model is None:
         model = os.getenv("MODEL_NAME", "")
     if client is None:
-        client = get_chat_model()
+        client = get_chat_model(temperature=0)
     threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
     logger = structlog.get_logger("evaluate_once")
 
@@ -478,7 +478,7 @@ class Agent2Evaluator:
         model = os.getenv("MODEL_NAME", "")
         threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
         max_iterations = int(os.getenv("MAX_ITERATIONS", "3"))
-        client = get_chat_model()
+        client = get_chat_model(temperature=0)
 
         self.logger.info(
             "agent2.start",
