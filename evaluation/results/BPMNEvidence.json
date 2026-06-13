@@ -2,10 +2,10 @@
   {
     "criterion_id": "syntax_1",
     "category": "syntax",
-    "status": "cumprido",
+    "status": "nao_avaliado",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todos os fluxos de sequência conectam elementos dentro da mesma piscina. Pontuação: 0.2.",
+    "observation": "Critério não avaliado. Motivo: Diagrama sem piscinas — não é possível verificar uso de fluxo de sequência. Pontuação: 0.2.",
     "question": "O conector “fluxo de sequência” está sendo utilizado apenas entre raias?"
   },
   {
@@ -20,55 +20,55 @@
   {
     "criterion_id": "syntax_3",
     "category": "syntax",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todos os gateways possuem fluxos de entrada e saída: 'Resultado da triagem' (entrada=1, saída=2); 'Resultado da proposta' (entrada=1, saída=2). Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui gateways. Pontuação: 0.2.",
     "question": "Os desvios (Gateway) estão sendo conectados pelo conector fluxo de sequência (linha constante)?"
   },
   {
     "criterion_id": "syntax_4",
     "category": "syntax",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.3,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Cada piscina possui evento de início: Necessidade de contratação. Pontuação: 0.3.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui piscinas. Pontuação: 0.3.",
     "question": "Evento de início foi inserido para cada piscina?"
   },
   {
     "criterion_id": "syntax_5",
     "category": "syntax",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Cada piscina possui evento(s) de fim: Candidato eliminado, Funcionário integrado. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui piscinas. Pontuação: 0.2.",
     "question": "Evento final foi inserido para cada piscina?"
   },
   {
     "criterion_id": "syntax_6",
     "category": "syntax",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Cada piscina possui exatamente 1 evento de início. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui piscinas. Pontuação: 0.2.",
     "question": "Existe apenas um evento inicial na piscina?"
   },
   {
     "criterion_id": "syntax_7",
     "category": "syntax",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Caminho 'Descartado' de 'Resultado da triagem' termina no evento de fim 'Candidato eliminado'. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui gateways — critério não se aplica. Pontuação: 0.2.",
     "question": "Evento de término estabelecido quando o fluxo é interrompido por alguma inconsistência ou em algum fluxo alternativo?"
   },
   {
     "criterion_id": "syntax_8",
     "category": "syntax",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Gateway 'Resultado da triagem' possui 2 fluxos de saída: Selecionado, Descartado; Gateway 'Resultado da proposta' possui 2 fluxos de saída: Oferta aceita, Oferta recusada. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui gateways. Pontuação: 0.2.",
     "question": "Os desvios (Gateway) possuem mais de um fluxo?"
   },
   {
@@ -76,17 +76,17 @@
     "category": "syntax",
     "status": "cumprido",
     "value": 0.2,
-    "element": "Reunir com o gestor da vaga (FY74eKXN6UqC)",
+    "element": "Recebimento e analise do pedido de contratação (N99YcceREr~L)",
     "observation": "Critério atendido. Pontuação: 0.2.",
     "question": "O tipo de cada tarefa está correto?"
   },
   {
     "criterion_id": "syntax_10",
     "category": "syntax",
-    "status": "nao_avaliado",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "gateway",
-    "observation": "Critério não avaliado. Motivo: Gateway(s) presentes: Resultado da triagem, Resultado da proposta — corretude do tipo ou comportamento requer julgamento. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui gateways. Pontuação: 0.2.",
     "question": "O tipo de cada gateway está correto?"
   },
   {
@@ -101,28 +101,28 @@
   {
     "criterion_id": "syntax_12",
     "category": "syntax",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todas as raias possuem responsável: Gestor do departamento, Recursos Humanos. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui raias definidas. Pontuação: 0.2.",
     "question": "Cada raia possui o seu respectivo responsável?"
   },
   {
     "criterion_id": "syntax_13",
     "category": "syntax",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todas as 11 tarefas estão associadas a exatamente uma piscina. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui piscinas. Pontuação: 0.2.",
     "question": "As tarefas estão associadas a apenas uma raia?"
   },
   {
     "criterion_id": "syntax_14",
     "category": "syntax",
-    "status": "nao_avaliado",
+    "status": "nao_aplicavel",
     "value": 0.3,
     "element": "Todas as atividades do processo foram representadas em raias diferentes?",
-    "observation": "Critério não avaliado. Motivo: Raias detectadas no diagrama. Piscina 'Processo de contratação' com raias: Gestor do departamento, Recursos Humanos. Atribuição correta de tarefas requer dados espaciais e enunciado do processo. Pontuação: 0.3.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui raia. Pontuação: 0.3.",
     "question": "Todas as atividades do processo foram representadas em raias diferentes?"
   },
   {
@@ -131,25 +131,25 @@
     "status": "cumprido",
     "value": 0.3,
     "element": "tarefas",
-    "observation": "Critério atendido. Motivo: 11 tarefa(s) modeladas (ex: Reunir com o gestor da vaga, Realizar integração e treinamentos, Divulgar vaga). Pontuação: 0.3.",
+    "observation": "Critério atendido. Motivo: 16 tarefa(s) modeladas (ex: Recebimento e analise do pedido de contratação, Recebimento e analise do pedido de contratação, Reunião com o gestor para detalhamento do perfil da vaga). Pontuação: 0.3.",
     "question": "As tarefas esperadas para o processo foram modeladas?"
   },
   {
     "criterion_id": "proposal_2",
     "category": "proposal",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.3,
     "element": "atores",
-    "observation": "Critério atendido. Motivo: Atores modelados nas raias: Gestor do departamento, Recursos Humanos. Pontuação: 0.3.",
+    "observation": "Critério não atendido. Motivo: Nenhuma piscina ou raia encontrada para representar atores. Pontuação: 0.3.",
     "question": "Os atores esperados para o processo foram modelados?"
   },
   {
     "criterion_id": "proposal_3",
     "category": "proposal",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.4,
     "element": "eventos",
-    "observation": "Critério atendido. Motivo: 4 evento(s) modelado(s) no diagrama. Pontuação: 0.4.",
+    "observation": "Critério não atendido. Motivo: Nenhum evento (BPMNEvent) encontrado no diagrama. Pontuação: 0.4.",
     "question": "Os eventos esperados foram modelados?"
   },
   {
@@ -164,28 +164,28 @@
   {
     "criterion_id": "proposal_5",
     "category": "proposal",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.6,
     "element": "gateways",
-    "observation": "Critério atendido. Motivo: 2 gateway(s) modelado(s): Resultado da triagem, Resultado da proposta. Pontuação: 0.6.",
+    "observation": "Critério não atendido. Motivo: Nenhum gateway (BPMNGateway) encontrado no diagrama. Pontuação: 0.6.",
     "question": "Os gateways esperados para o processo foram modelados?"
   },
   {
     "criterion_id": "semantics_1",
     "category": "semantics",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.75,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todas as 11 tarefas possuem fluxo de entrada. Pontuação: 0.75.",
+    "observation": "Critério não atendido. Motivo: Tarefa(s) sem fluxo de entrada: Recebimento e analise do pedido de contratação, Avaliação dos candidatos. Pontuação: 0.75.",
     "question": "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?"
   },
   {
     "criterion_id": "semantics_2",
     "category": "semantics",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.75,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todas as 11 tarefas possuem exatamente 1 fluxo de saída. Pontuação: 0.75.",
+    "observation": "Critério não atendido. Motivo: Tarefa(s) com número incorreto de fluxos de saída: 'Avaliação dos candidatos' (0 saída(s)). Pontuação: 0.75.",
     "question": "Todas as tarefas possuem apenas um fluxo de saída?"
   },
   {
@@ -193,44 +193,44 @@
     "category": "semantics",
     "status": "cumprido",
     "value": 0.25,
-    "element": "Reunir com o gestor da vaga (FY74eKXN6UqC)",
+    "element": "Recebimento e analise do pedido de contratação (N99YcceREr~L)",
     "observation": "Critério atendido. Pontuação: 0.25.",
     "question": "Todas as tarefas representam ações? (há ausência de tarefa que representa um resultado?)"
   },
   {
     "criterion_id": "semantics_4",
     "category": "semantics",
-    "status": "nao_avaliado",
+    "status": "nao_aplicavel",
     "value": 0.25,
     "element": "Todas as tarefas estão dispostas na raia do responsável correto?",
-    "observation": "Critério não avaliado. Motivo: Raias detectadas no diagrama. Piscina 'Processo de contratação' com raias: Gestor do departamento, Recursos Humanos. Atribuição correta de tarefas requer dados espaciais e enunciado do processo. Pontuação: 0.25.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui raia. Pontuação: 0.25.",
     "question": "Todas as tarefas estão dispostas na raia do responsável correto?"
   },
   {
     "criterion_id": "best_practices_1",
     "category": "best_practices",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Eventos de início/fim com rótulo: 'Necessidade de contratação' (início), 'Candidato eliminado' (fim), 'Funcionário integrado' (fim). Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui eventos de início ou fim identificáveis. Pontuação: 0.2.",
     "question": "Evento de início e fim possuem rótulo?"
   },
   {
     "criterion_id": "best_practices_2",
     "category": "best_practices",
-    "status": "cumprido",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Gateway 'Resultado da triagem' tem rótulo e saídas rotuladas: Selecionado, Descartado; Gateway 'Resultado da proposta' tem rótulo e saídas rotuladas: Oferta aceita, Oferta recusada. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui gateways. Pontuação: 0.2.",
     "question": "Os desvios (Gateway) exclusivos possuem rótulo com a decisão a ser tomada?"
   },
   {
     "criterion_id": "best_practices_3",
     "category": "best_practices",
-    "status": "nao_avaliado",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "gateway",
-    "observation": "Critério não avaliado. Motivo: Gateway(s) presentes: Resultado da triagem, Resultado da proposta — corretude do tipo ou comportamento requer julgamento. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui gateways. Pontuação: 0.2.",
     "question": "Os gateways possuem uma convergência quando aplicável?"
   },
   {
@@ -238,7 +238,7 @@
     "category": "best_practices",
     "status": "cumprido",
     "value": 0.2,
-    "element": "Reunir com o gestor da vaga (FY74eKXN6UqC)",
+    "element": "Recebimento e analise do pedido de contratação (N99YcceREr~L)",
     "observation": "Critério atendido. Pontuação: 0.2.",
     "question": "As tarefas possuem um substantivo e estão no infinitivo?"
   },
@@ -247,17 +247,17 @@
     "category": "best_practices",
     "status": "cumprido",
     "value": 0.2,
-    "element": "Reunir com o gestor da vaga (FY74eKXN6UqC)",
+    "element": "Recebimento e analise do pedido de contratação (N99YcceREr~L)",
     "observation": "Critério atendido. Pontuação: 0.2.",
     "question": "As descrições das tarefas estão escritas com uma descrição breve e objetiva?"
   },
   {
     "criterion_id": "best_practices_6",
     "category": "best_practices",
-    "status": "cumprido",
+    "status": "nao_avaliado",
     "value": 0.2,
-    "element": "Processo de contratação",
-    "observation": "Critério atendido. Motivo: Nome da piscina 'Processo de contratação' corresponde ao processo descrito no enunciado (palavras-chave encontradas: contratação, processo). Pontuação: 0.2.",
+    "element": "pool",
+    "observation": "Critério não avaliado. Motivo: Piscina sem nome — não foi possível comparar com o enunciado. Pontuação: 0.2.",
     "question": "O nome da piscina corresponde ao nome do processo?"
   },
   {
@@ -265,17 +265,17 @@
     "category": "best_practices",
     "status": "cumprido",
     "value": 0.2,
-    "element": "Reunir com o gestor da vaga (FY74eKXN6UqC)",
+    "element": "Recebimento e analise do pedido de contratação (N99YcceREr~L)",
     "observation": "Critério atendido. Pontuação: 0.2.",
     "question": "Os nomes das tarefas não estão escritas em forma de siglas ou abreviaturas?"
   },
   {
     "criterion_id": "best_practices_8",
     "category": "best_practices",
-    "status": "nao_avaliado",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "gateway",
-    "observation": "Critério não avaliado. Motivo: Gateway(s) presentes: Resultado da triagem, Resultado da proposta — corretude do tipo ou comportamento requer julgamento. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui gateways. Pontuação: 0.2.",
     "question": "São usados nomes breves e objetivos para os eventos, os gateways e as atividades?"
   },
   {
@@ -284,16 +284,16 @@
     "status": "nao_aplicavel",
     "value": 0.2,
     "element": "A nomenclatura dos objetos, tarefas, subprocessos, piscinas e raias está padronizada? (exemplo, tamanho, dentro ou fora do elemento, acima, abaixo ou ao lado)",
-    "observation": "Critério não aplicável. Motivo: Diagrama não possui subprocesso. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui raia. Pontuação: 0.2.",
     "question": "A nomenclatura dos objetos, tarefas, subprocessos, piscinas e raias está padronizada? (exemplo, tamanho, dentro ou fora do elemento, acima, abaixo ou ao lado)"
   },
   {
     "criterion_id": "best_practices_10",
     "category": "best_practices",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Nenhuma tarefa redundante (11 tarefas com nomes únicos). Pontuação: 0.2.",
+    "observation": "Critério não atendido. Motivo: Tarefas com nome duplicado: recebimento e analise do pedido de contratação, avaliação dos candidatos. Pontuação: 0.2.",
     "question": "As tarefas redundantes foram excluídas?"
   },
   {
@@ -308,10 +308,10 @@
   {
     "criterion_id": "readability_2",
     "category": "readability",
-    "status": "nao_avaliado",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "Os atores estão inseridos nas raias de acordo com a sua ordem de aparecimento no processo?",
-    "observation": "Critério não avaliado. Motivo: Não foi possível coletar evidências suficientes para avaliar este critério. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui raia. Pontuação: 0.2.",
     "question": "Os atores estão inseridos nas raias de acordo com a sua ordem de aparecimento no processo?"
   },
   {
@@ -326,19 +326,19 @@
   {
     "criterion_id": "readability_4",
     "category": "readability",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todos os elementos estão conectados ao fluxo do processo. Pontuação: 0.2.",
+    "observation": "Critério não atendido. Motivo: Elemento(s) sem conexão ao fluxo: GESTOR DEP ART, q79Y.gEmrS39, Necessidade \ncontratação, Decisão sobre \na triagem dos \ncurriculos, Decisão sobre\noferta de emprego, Processo de integração\ndo novo funcionario. Pontuação: 0.2.",
     "question": "Todos os elementos estão conectados?"
   },
   {
     "criterion_id": "readability_5",
     "category": "readability",
-    "status": "nao_avaliado",
+    "status": "nao_aplicavel",
     "value": 0.2,
     "element": "gateway",
-    "observation": "Critério não avaliado. Motivo: Gateway(s) presentes: Resultado da triagem, Resultado da proposta — corretude do tipo ou comportamento requer julgamento. Pontuação: 0.2.",
+    "observation": "Critério não aplicável. Motivo: Diagrama não possui gateways. Pontuação: 0.2.",
     "question": "As tarefas e desvios (Gateway) estão dispostos sob a lógica de funcionamento do processo?"
   }
 ]

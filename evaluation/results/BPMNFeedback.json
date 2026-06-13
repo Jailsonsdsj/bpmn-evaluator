@@ -2,269 +2,269 @@
   "grades_and_feedbacks": [
     [
       {
-        "value": 0.3,
+        "value": 0.0,
         "category": "O conector “fluxo de sequência” está sendo utilizado apenas entre raias?"
       },
-      "Sem problemas"
+      "Não avaliado"
     ],
     [
       {
         "value": 0.3,
         "category": "O conector “fluxo de mensagem” está sendo utilizado apenas entre piscinas?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marked this as NAO_APLICAVEL. The observation confirms the diagram has only one pool, making message flow criteria inapplicable. This is a clear-cut case of correct non-applicability assessment.)"
     ],
     [
       {
         "value": 0.3,
         "category": "Os desvios (Gateway) estão sendo conectados pelo conector fluxo de sequência (linha constante)?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation explicitly states the diagram has no gateways, making gateway connection criteria inapplicable. The judgment is well-supported.)"
     ],
     [
       {
         "value": 0.3,
         "category": "Evento de início foi inserido para cada piscina?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marked this as NAO_APLICAVEL. The observation confirms the diagram lacks pools, making pool-specific start event criteria inapplicable. The assessment is accurate.)"
     ],
     [
       {
         "value": 0.3,
         "category": "Evento final foi inserido para cada piscina?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation states the diagram has no pools, making pool-specific end event criteria inapplicable. The judgment is sound.)"
     ],
     [
       {
         "value": 0.3,
         "category": "Existe apenas um evento inicial na piscina?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marked this as NAO_APLICAVEL. The observation confirms no pools exist, making single start event per pool criteria inapplicable. The assessment is well-supported.)"
     ],
     [
       {
         "value": 0.3,
         "category": "Evento de término estabelecido quando o fluxo é interrompido por alguma inconsistência ou em algum fluxo alternativo?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation states the diagram lacks gateways, making termination event criteria for alternative flows inapplicable. The reasoning is correct.)"
     ],
     [
       {
         "value": 0.3,
         "category": "Os desvios (Gateway) possuem mais de um fluxo?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marked this as NAO_APLICAVEL. The observation confirms no gateways exist, making multiple flow criteria for gateways inapplicable. The judgment is accurate.)"
     ],
     [
       {
         "value": 0.3,
         "category": "O tipo de cada tarefa está correto?"
       },
-      "Sem problemas"
+      "✓ Critério atendido com sucesso."
     ],
     [
       {
         "value": 0.3,
         "category": "O tipo de cada gateway está correto?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation confirms no gateways exist, making gateway type criteria inapplicable. The judgment is well-supported.)"
     ],
     [
       {
-        "value": 0.3,
+        "value": 0.0,
         "category": "O tipo de cada evento está correto?"
       },
-      "Sem problemas"
+      "Não avaliado"
     ],
     [
       {
         "value": 0.3,
         "category": "Cada raia possui o seu respectivo responsável?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation confirms no lanes are defined, making lane responsibility criteria inapplicable. The judgment is accurate.)"
     ],
     [
       {
         "value": 0.3,
         "category": "As tarefas estão associadas a apenas uma raia?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marked this as NAO_APLICAVEL. The observation states no pools exist, making task-lane association criteria inapplicable. The assessment is sound.)"
     ],
     [
       {
         "value": 0.3,
         "category": "Todas as atividades do processo foram representadas em raias diferentes?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation confirms no lanes exist, making activity distribution across lanes criteria inapplicable. The judgment is well-supported.)"
     ],
     [
       {
         "value": 0.2,
         "category": "As tarefas esperadas para o processo foram modeladas?"
       },
-      "Sem problemas"
+      "✓ Critério atendido com sucesso."
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.13999999999999999,
         "category": "Os atores esperados para o processo foram modelados?"
       },
-      "Sem problemas"
+      "**Feedback sobre Atores/Piscinas:**\n\nSeu diagrama não possui piscinas (pools) para representar os diferentes atores do processo. Você deveria criar piscinas separadas para \"Gestor de Departamento\" e \"Recursos Humanos\", organizando as atividades de cada ator em suas respectivas raias. Isso tornaria clara a responsabilidade de cada participante no processo de recrutamento."
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.12,
         "category": "Os eventos esperados foram modelados?"
       },
-      "Sem problemas"
+      "**Feedback sobre Eventos BPMN:**\n\nSeu diagrama não possui eventos BPMN (início, fim ou intermediários). Todo processo deve começar com um evento de início (círculo simples) e terminar com evento de fim (círculo com borda espessa). Substitua o texto \"Necessidade contratação\" por um evento de início e adicione um evento de fim após a integração do funcionário."
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.0,
         "category": "Os objetos de fluxo esperados foram modelados?"
       },
-      "Sem problemas"
+      "Não avaliado"
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.08000000000000002,
         "category": "Os gateways esperados para o processo foram modelados?"
       },
-      "Sem problemas"
+      "**Feedback sobre Gateways:**\n\nSeu diagrama não possui gateways BPMN adequados. Você usou elementos de decisão genéricos (DecisionBlock) em vez dos gateways losangulares específicos do BPMN. Substitua os \"X\" por gateways exclusivos (◊) para representar as decisões de triagem de currículos e aceitação da oferta de emprego."
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.05,
         "category": "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?"
       },
-      "Sem problemas"
+      "**Feedback:**\n\nVocê tem várias tarefas desconectadas do fluxo principal, como \"Necessidade contratação\" (que deveria ser um evento de início) e algumas atividades do Gestor que não possuem fluxos de entrada. Todas as tarefas precisam estar conectadas ao processo através de setas - adicione eventos de início/fim adequados e conecte todas as atividades em uma sequência lógica contínua."
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.05,
         "category": "Todas as tarefas possuem apenas um fluxo de saída?"
       },
-      "Sem problemas"
+      "**Feedback:**\n\nVocê tem tarefas sem fluxo de saída, como \"Descarte do currículo\" e \"Processo de integração do novo funcionário\". Toda tarefa deve ter pelo menos um fluxo de saída conectando-a ao próximo elemento do processo. Adicione conectores saindo dessas tarefas para dar continuidade ao fluxo ou termine com eventos de fim apropriados."
     ],
     [
       {
         "value": 0.2,
         "category": "Todas as tarefas representam ações? (há ausência de tarefa que representa um resultado?)"
       },
-      "Sem problemas"
+      "✓ Critério atendido com sucesso."
     ],
     [
       {
         "value": 0.2,
         "category": "Todas as tarefas estão dispostas na raia do responsável correto?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation confirms no lanes exist, making task-lane responsibility criteria inapplicable. The judgment is accurate.)"
     ],
     [
       {
         "value": 0.2,
         "category": "Evento de início e fim possuem rótulo?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marked this as NAO_APLICAVEL. The observation states no identifiable start or end events exist, making event labeling criteria inapplicable. The assessment is sound.)"
     ],
     [
       {
         "value": 0.2,
         "category": "Os desvios (Gateway) exclusivos possuem rótulo com a decisão a ser tomada?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation confirms no gateways exist, making gateway labeling criteria inapplicable. The judgment is well-supported.)"
     ],
     [
       {
         "value": 0.2,
         "category": "Os gateways possuem uma convergência quando aplicável?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marked this as NAO_APLICAVEL. The observation states no gateways exist, making gateway convergence criteria inapplicable. The assessment is accurate.)"
     ],
     [
       {
         "value": 0.2,
         "category": "As tarefas possuem um substantivo e estão no infinitivo?"
       },
-      "Sem problemas"
+      "✓ Critério atendido com sucesso."
     ],
     [
       {
         "value": 0.2,
         "category": "As descrições das tarefas estão escritas com uma descrição breve e objetiva?"
       },
-      "Sem problemas"
+      "✓ Critério atendido com sucesso."
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.0,
         "category": "O nome da piscina corresponde ao nome do processo?"
       },
-      "Sem problemas"
+      "Não avaliado"
     ],
     [
       {
         "value": 0.2,
         "category": "Os nomes das tarefas não estão escritas em forma de siglas ou abreviaturas?"
       },
-      "Sem problemas"
+      "✓ Critério atendido com sucesso."
     ],
     [
       {
         "value": 0.2,
         "category": "São usados nomes breves e objetivos para os eventos, os gateways e as atividades?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marked this as NAO_APLICAVEL. The observation confirms no gateways exist, making gateway naming criteria inapplicable. The judgment is accurate.)"
     ],
     [
       {
         "value": 0.2,
         "category": "A nomenclatura dos objetos, tarefas, subprocessos, piscinas e raias está padronizada? (exemplo, tamanho, dentro ou fora do elemento, acima, abaixo ou ao lado)"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation confirms no lanes exist, making nomenclature standardization criteria inapplicable. The assessment is sound.)"
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.16000000000000003,
         "category": "As tarefas redundantes foram excluídas?"
       },
-      "Sem problemas"
+      "**Feedback:**\n\nVocê possui tarefas duplicadas no seu diagrama, como \"Recebimento e analise do pedido de contratação\" e \"Avaliação dos candidatos\" que aparecem múltiplas vezes. Para corrigir, mantenha apenas uma instância de cada tarefa e use conectores para indicar quando diferentes atores participam da mesma atividade, ou renomeie as tarefas para refletir perspectivas específicas de cada ator."
     ],
     [
       {
-        "value": 0.1,
+        "value": 0.0,
         "category": "Existe ausência de cruzamento de linhas ou de conexões entre elementos?"
       },
-      "Sem problemas"
+      "Não avaliado"
     ],
     [
       {
         "value": 0.1,
         "category": "Os atores estão inseridos nas raias de acordo com a sua ordem de aparecimento no processo?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marked this as NAO_APLICAVEL. The observation confirms no lanes exist, making actor ordering criteria inapplicable. The judgment is accurate.)"
     ],
     [
       {
-        "value": 0.1,
+        "value": 0.0,
         "category": "O fluxo do processo está sendo representado da esquerda para a direita?"
       },
-      "Sem problemas"
+      "Não avaliado"
     ],
     [
       {
-        "value": 0.1,
+        "value": 0.08000000000000002,
         "category": "Todos os elementos estão conectados?"
       },
-      "Sem problemas"
+      "**Feedback sobre conectividade dos elementos:**\n\nSeu diagrama possui elementos desconectados que quebram o fluxo do processo. Por exemplo, o elemento \"Necessidade contratação\" não está conectado ao início do fluxo, e há atividades duplicadas (como \"Avaliação dos candidatos\") que não se integram adequadamente. Para corrigir, conecte todos os elementos em uma sequência lógica única, eliminando duplicações e garantindo que cada elemento tenha pelo menos uma conexão de entrada e uma de saída."
     ],
     [
       {
         "value": 0.1,
         "category": "As tarefas e desvios (Gateway) estão dispostos sob a lógica de funcionamento do processo?"
       },
-      "Sem problemas"
+      "Critério não aplicável a este diagrama (Agent 1 correctly identified this as NAO_APLICAVEL. The observation confirms no gateways exist, making task-gateway logical arrangement criteria inapplicable. The assessment is accurate.)"
     ]
   ]
 }
