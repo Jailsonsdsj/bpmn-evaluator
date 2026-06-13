@@ -1,0 +1,270 @@
+{
+  "grades_and_feedbacks": [
+    [
+      {
+        "value": 0.3,
+        "category": "O conector “fluxo de sequência” está sendo utilizado apenas entre raias?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "O conector “fluxo de mensagem” está sendo utilizado apenas entre piscinas?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Os desvios (Gateway) estão sendo conectados pelo conector fluxo de sequência (linha constante)?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Evento de início foi inserido para cada piscina?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Evento final foi inserido para cada piscina?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Existe apenas um evento inicial na piscina?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Evento de término estabelecido quando o fluxo é interrompido por alguma inconsistência ou em algum fluxo alternativo?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Os desvios (Gateway) possuem mais de um fluxo?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "O tipo de cada tarefa está correto?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "O tipo de cada gateway está correto?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "O tipo de cada evento está correto?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Cada raia possui o seu respectivo responsável?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "As tarefas estão associadas a apenas uma raia?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Todas as atividades do processo foram representadas em raias diferentes?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "As tarefas esperadas para o processo foram modeladas?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os atores esperados para o processo foram modelados?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os eventos esperados foram modelados?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os objetos de fluxo esperados foram modelados?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os gateways esperados para o processo foram modelados?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Todas as tarefas possuem apenas um fluxo de saída?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Todas as tarefas representam ações? (há ausência de tarefa que representa um resultado?)"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Todas as tarefas estão dispostas na raia do responsável correto?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Evento de início e fim possuem rótulo?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os desvios (Gateway) exclusivos possuem rótulo com a decisão a ser tomada?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os gateways possuem uma convergência quando aplicável?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "As tarefas possuem um substantivo e estão no infinitivo?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "As descrições das tarefas estão escritas com uma descrição breve e objetiva?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "O nome da piscina corresponde ao nome do processo?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os nomes das tarefas não estão escritas em forma de siglas ou abreviaturas?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "São usados nomes breves e objetivos para os eventos, os gateways e as atividades?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "A nomenclatura dos objetos, tarefas, subprocessos, piscinas e raias está padronizada? (exemplo, tamanho, dentro ou fora do elemento, acima, abaixo ou ao lado)"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "As tarefas redundantes foram excluídas?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.1,
+        "category": "Existe ausência de cruzamento de linhas ou de conexões entre elementos?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.1,
+        "category": "Os atores estão inseridos nas raias de acordo com a sua ordem de aparecimento no processo?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.1,
+        "category": "O fluxo do processo está sendo representado da esquerda para a direita?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.1,
+        "category": "Todos os elementos estão conectados?"
+      },
+      "Sem problemas"
+    ],
+    [
+      {
+        "value": 0.1,
+        "category": "As tarefas e desvios (Gateway) estão dispostos sob a lógica de funcionamento do processo?"
+      },
+      "Sem problemas"
+    ]
+  ]
+}

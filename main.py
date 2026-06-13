@@ -38,6 +38,7 @@ def _build_steps(diagram: Path, checklist: Path, enunciado: Path, output_dir: Pa
                 sys.executable, "-m", "agents.agent1_analyst",
                 "--diagram",   str(diagram),
                 "--checklist", str(checklist),
+                "--enunciado", str(enunciado),
                 "--output",    str(evidence),
             ],
         },

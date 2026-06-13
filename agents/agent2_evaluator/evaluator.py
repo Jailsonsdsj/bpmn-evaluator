@@ -38,6 +38,7 @@ CRITICAL RULES:
 - For status "cumprido": confirm the element was correctly identified as met.
 - For status "nao_cumprido": confirm the criterion is truly unmet, not just overlooked.
 - For status "nao_aplicavel": confirm the criterion is genuinely out of scope.
+- For status "nao_avaliado": confirm that the criterion is marked as not evaluated (no penalty applies).
 """
 
 _CRITIQUE_SYSTEM_PROMPT = """\
@@ -85,7 +86,7 @@ def evaluate_once(
     if model is None:
         model = os.getenv("MODEL_NAME", "")
     if client is None:
-        client = get_chat_model()
+        client = get_chat_model(temperature=0)
     threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
     logger = structlog.get_logger("evaluate_once")
 
@@ -108,8 +109,6 @@ def evaluate_once(
         checklist_entry = checklist_entry or {}
 
         llm_entry = llm_by_id.get(cid, {})
-        checklist_penalty = 1.0 - evidence.value # Aplica penalidade
-        category_weight = float(checklist_entry.get("category_weight", 0.0))
         checklist_penalty = evidence.value
         category_weight = float(checklist_entry.get("category_weight", 0.001))
         justification = llm_entry.get("justification", "No justification returned by model.")
@@ -117,7 +116,7 @@ def evaluate_once(
 
         applied_penalty = (
             0.0
-            if evidence.status in ("cumprido", "nao_aplicavel")
+            if evidence.status in ("cumprido", "nao_aplicavel", "nao_avaliado")
             else checklist_penalty  # nao_cumprido
         )
 
@@ -427,10 +426,12 @@ def build_output(
 
     summary: dict[str, Any] = {
         "total_criteria": len(assessments),
+        "criteria_evaluated": len([a for a in assessments if a.status != "nao_avaliado"]),
         "status_counts": {
             "cumprido": status_counts.get("cumprido", 0),
             "nao_cumprido": status_counts.get("nao_cumprido", 0),
             "nao_aplicavel": status_counts.get("nao_aplicavel", 0),
+            "nao_avaliado": status_counts.get("nao_avaliado", 0),
         },
         "items_for_review": items_for_review,
         "total_applied_penalty": total_applied,
@@ -477,7 +478,7 @@ class Agent2Evaluator:
         model = os.getenv("MODEL_NAME", "")
         threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.6"))
         max_iterations = int(os.getenv("MAX_ITERATIONS", "3"))
-        client = get_chat_model()
+        client = get_chat_model(temperature=0)
 
         self.logger.info(
             "agent2.start",

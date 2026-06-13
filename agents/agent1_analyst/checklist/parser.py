@@ -53,7 +53,7 @@ def parse_csv_checklist(path: Path) -> list[dict[str, Any]]:
         category_idx = _find_header_index(normalized, ["categoria"])
         item_idx = _find_header_index(normalized, ["itens avaliados"])
         criteria_idx = _find_header_index(normalized, ["criterios avaliados", "critérios avaliados"])
-        score_general_idx = _find_header_index(normalized, ["pontuação geral", "pontuacao geral"])
+        score_general_idx = _find_header_index(normalized, ["pontuação geral", "pontuacao geral", "pontuação", "pontuacao"])
         score_equiv_idx = _find_header_index(
             normalized,
             [
@@ -71,6 +71,9 @@ def parse_csv_checklist(path: Path) -> list[dict[str, Any]]:
         raise ValueError(
             "Checklist CSV inválido: cabeçalho não encontrado (esperado 'Categoria' e 'Itens avaliados')."
         )
+
+    code_idx = _find_header_index(normalized, ["código", "codigo", "code", "id"])
+    tipo_idx = _find_header_index(normalized, ["tipo_avaliacao", "tipo avaliacao", "tipo"])
 
     counters: dict[str, int] = {}
     criteria: list[dict[str, Any]] = []
@@ -95,6 +98,9 @@ def parse_csv_checklist(path: Path) -> list[dict[str, Any]]:
         counters[normalized_category] = counters.get(normalized_category, 0) + 1
         criterion_id = f"{normalized_category}_{counters[normalized_category]}"
 
+        code = _get_cell(row, code_idx)
+        tipo_avaliacao = _get_cell(row, tipo_idx) or "interpretativo"
+
         score_equiv = _parse_score(_get_cell(row, score_equiv_idx))
         score_general = _parse_score(_get_cell(row, score_general_idx))
         score = _select_score(score_equiv, score_general)
@@ -102,11 +108,13 @@ def parse_csv_checklist(path: Path) -> list[dict[str, Any]]:
         criteria.append(
             {
                 "criterion_id": criterion_id,
+                "code": code,
                 "category": normalized_category,
                 "description": item_cell,
                 "source_category": last_category,
                 "source_row": row_idx,
                 "score": score,
+                "tipo_avaliacao": tipo_avaliacao,
             }
         )
 

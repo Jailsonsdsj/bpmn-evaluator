@@ -182,14 +182,15 @@ def test_agent1_accepts_alternative_diagram_keys() -> None:
     assert evidences[0].status == "cumprido"
 
 
-def test_agent1_default_to_absent_when_no_match() -> None:
+def test_agent1_default_to_not_evaluated_when_no_match() -> None:
+    """Quando um critério é vago e não corresponde a nenhuma heurística, retorna nao_avaliado."""
     diagram = {"elements": [], "flows": []}
     checklist = {"criteria": [{"id": "c1", "category": "syntax", "description": "Critério não mapeado"}]}
 
     evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
 
     assert len(evidences) == 1
-    assert evidences[0].status == "nao_cumprido"
+    assert evidences[0].status == "nao_avaliado"
 
 
 def test_agent1_finds_elements_in_nested_structure() -> None:
@@ -307,3 +308,63 @@ def test_agent1_marks_not_applicable_for_pool_criteria_without_pools() -> None:
 
     assert evidences[0].status == "nao_aplicavel"
     assert evidences[0].value == 0.0
+
+
+def test_agent1_marks_not_evaluated_for_vague_criteria_without_evidence() -> None:
+    """Quando um critério é vago e não corresponde a nenhuma heurística textual, marcar como nao_avaliado."""
+    diagram = {
+        "elements": [
+            {"id": "e1", "type": "startEvent", "name": "Start", "outgoing": ["f1"]},
+            {"id": "t1", "type": "task", "name": "Task A", "incoming": ["f1"], "outgoing": []},
+        ],
+        "flows": [{"id": "f1", "source": "e1", "target": "t1"}],
+    }
+    checklist = {
+        "criteria": [
+            {
+                "id": "c_vague",
+                "category": "semantics",
+                "description": "Critério muito vago que não corresponde a nenhuma heurística",
+            }
+        ]
+    }
+
+    evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
+
+    assert evidences[0].status == "nao_avaliado"
+    assert evidences[0].value == 0.0
+    assert "não foi possível coletar evidências" in evidences[0].observation.lower()
+
+
+def test_agent1_distinguishes_not_evaluated_from_not_compliant() -> None:
+    """Critérios com evidência clara de falha devem ser nao_cumprido, não nao_avaliado."""
+    diagram = {
+        "elements": [
+            {"id": "e1", "type": "task", "name": "Task A", "outgoing": []},
+        ],
+        "flows": [],
+    }
+    checklist = {
+        "criteria": [
+            {
+                "id": "c_explicit_fail",
+                "category": "syntax",
+                "element_type": "task",
+                "element_name": "Task A",
+                "require_outgoing": True,  # Falha explícita
+            },
+            {
+                "id": "c_no_evidence",
+                "category": "semantics",
+                "description": "Critério obscuro sem correspondência",  # Sem evidência
+            },
+        ]
+    }
+
+    evidences = Agent1Analyst().run({"diagram": diagram, "checklist": checklist})
+    by_id = {item.criterion_id: item for item in evidences}
+
+    # c_explicit_fail tem evidência clara de falha → nao_cumprido
+    assert by_id["c_explicit_fail"].status == "nao_cumprido"
+    # c_no_evidence não tem evidência → nao_avaliado
+    assert by_id["c_no_evidence"].status == "nao_avaliado"
