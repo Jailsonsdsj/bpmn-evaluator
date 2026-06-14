@@ -53,7 +53,7 @@ def main() -> None:
     evidence_list = load_evidence(evidence_path)
     print(f"  Evidence items : {len(evidence_list)}")
 
-    print("\nRunning full Agent 2 pipeline (load → plan → loop → serialize)...")
+    print("\nRunning full Agent 2 pipeline (load -> plan -> loop -> serialize)...")
     evaluator = Agent2Evaluator()
     assessments = evaluator.run(evidence_list, checklist_path, output_path)
 

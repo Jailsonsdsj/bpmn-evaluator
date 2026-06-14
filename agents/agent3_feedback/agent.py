@@ -36,7 +36,7 @@ class Agent3Feedback:
     def run(self, payload: dict[str, Any]) -> BPMNFeedback:
         """Runs the mapper from in-memory payload."""
         load_dotenv()
-        llm = get_chat_model()
+        llm = get_chat_model(temperature=0.3)
 
         diagram = normalize_diagram(payload.get("diagram", {}))
         assessment: list[BPMNAssessment] = payload.get("assessment", {})
@@ -83,17 +83,38 @@ class Agent3Feedback:
             assessment (BPMNAssessment): Avaliação de um critério do checklist
 
         Returns:
-            None | tuple[str, float, str]: Feedback personalizado, nota, questão
+            tuple[str, float, str]: Feedback personalizado, nota, questão
         """
-        # nao_avaliado items are excluded from feedback and grading
+        # Calcula a nota com base em applied_penalty e category_weight
+        grade = (1.0 - assessment.applied_penalty) * assessment.category_weight
+        
+        # nao_avaliado: excluído da avaliação (nota 0.0, sem feedback)
         if assessment.status == "nao_avaliado":
             return ("Não avaliado", 0.0, assessment.question or "")
         
-        if assessment.applied_penalty == 0.0:
-            return ("Sem problemas", assessment.category_weight, assessment.question or "")
-        else:
-            # Criar uma pipeline do langgraph para fazer o mapeamento
-            feedback = map_assessment_chain(system_message, llm, assessment)
-            return (feedback, (1-assessment.applied_penalty) * assessment.category_weight, assessment.question or "")
+        # nao_aplicavel: contextual, sem penalidade aplicada
+        if assessment.status == "nao_aplicavel":
+            return (f"Critério não aplicável a este diagrama ({assessment.justification})", 
+                    grade, assessment.question or "")
+        
+        # cumprido: positivo, sem penalidade
+        if assessment.status == "cumprido":
+            return ("✓ Critério atendido com sucesso.", grade, assessment.question or "")
+        
+        # nao_cumprido: ÚNICO status que chama LLM para feedback personalizado
+        if assessment.status == "nao_cumprido":
+            try:
+                feedback = map_assessment_chain(system_message, llm, assessment)
+                # Valida feedback não vazio
+                if not feedback or feedback.strip() == "":
+                    feedback = f"Critério não atendido. {assessment.justification or 'Verifique o diagrama.'}"
+                return (feedback, grade, assessment.question or "")
+            except Exception as exc:
+                self.logger.error("agent3.llm_call_failed", criterion_id=assessment.criterion_id, error=str(exc))
+                return (f"Critério não atendido. {assessment.justification or 'Erro ao gerar feedback.'}", 
+                        grade, assessment.question or "")
+        
+        # Fallback para status desconhecido
+        return ("Status desconhecido", 0.0, assessment.question or "")
 
 

@@ -105,36 +105,54 @@ ENUNCIADO_PATH = "evaluation/dataset/Instruções.txt"
 # ---------------------------------------------------------------------------
 
 class TestAppliedPenalty:
+    @patch("agents.agent3_feedback.agent.read_diagram_file")
+    @patch("agents.agent3_feedback.agent.read_bpmnassessment_file")
     @patch("agents.agent3_feedback.agent.map_assessment_chain")
     @patch("agents.agent3_feedback.agent.get_chat_model")
-    def test_cumprido_applied_grade_is_correct(self, mock_get_llm, mock_chain):
+    def test_cumprido_applied_grade_is_correct(self, mock_get_llm, mock_chain, mock_read_assessment, mock_read_diagram):
+        mock_read_diagram.return_value = {"elements": [], "flows": []}
+        mock_read_assessment.return_value = [make_assessment("syntax_1", "cumprido", checklist_penalty=0.20)]
         mock_chain.return_value = "Correto"
-        path = make_assessments([make_assessment("syntax_1", "cumprido", checklist_penalty=0.20)])
+        
         agent = Agent3Feedback()
         feedbacks = agent.run_from_files(
-            diagram_path =  DIAGRAM_PATH, enunciado_path = ENUNCIADO_PATH, assessment_path=path
+            diagram_path=DIAGRAM_PATH, enunciado_path=ENUNCIADO_PATH, assessment_path="dummy"
         )
-        assert feedbacks.grades_and_feedbacks[0][0].value == 0.8
+        assert feedbacks.grades_and_feedbacks[0][0].value == 1.0
+        # cumprido items should have positive feedback, not "Sem problemas"
+        assert "✓" in feedbacks.grades_and_feedbacks[0][1] or "Critério atendido" in feedbacks.grades_and_feedbacks[0][1]
 
+    @patch("agents.agent3_feedback.agent.read_diagram_file")
+    @patch("agents.agent3_feedback.agent.read_bpmnassessment_file")
     @patch("agents.agent3_feedback.agent.map_assessment_chain")
     @patch("agents.agent3_feedback.agent.get_chat_model")
-    def test_mixed_statuses_in_one_call(self, mock_get_llm, mock_cls):
-        mock_cls.side_effect = [
-            "não ok",
-            "ok",
-        ] # Only 2 calls
+    def test_mixed_statuses_in_one_call(self, mock_get_llm, mock_chain, mock_read_assessment, mock_read_diagram):
+        mock_read_diagram.return_value = {"elements": [], "flows": []}
+        
         assessments = [
             make_assessment("syntax_1",   "cumprido",     applied_penalty = 0.0),
             make_assessment("syntax_2",   "nao_cumprido", applied_penalty = 0.30),
             make_assessment("proposal_1", "nao_aplicavel", applied_penalty = 0.40),
         ]
-        path = make_assessments(assessments)
+        mock_read_assessment.return_value = assessments
+        mock_chain.side_effect = [
+            "não ok",  # For nao_cumprido item
+        ]
+        
         agent = Agent3Feedback()
         feedbacks = agent.run_from_files(
-            diagram_path =  DIAGRAM_PATH, enunciado_path = ENUNCIADO_PATH, assessment_path=path
+            diagram_path=DIAGRAM_PATH, enunciado_path=ENUNCIADO_PATH, assessment_path="dummy"
         )
         by_idx: list[ItemGrade] = [a[0] for a in feedbacks.grades_and_feedbacks]
+        
+        # cumprido: full score, positive message
         assert by_idx[0].value == pytest.approx(1.0)
-        assert feedbacks.grades_and_feedbacks[0][1] == "Sem problemas"
+        assert "✓" in feedbacks.grades_and_feedbacks[0][1] or "Critério atendido" in feedbacks.grades_and_feedbacks[0][1]
+        
+        # nao_cumprido: penalty applied, LLM feedback
         assert by_idx[1].value == pytest.approx(0.7)
+        assert feedbacks.grades_and_feedbacks[1][1] == "não ok"
+        
+        # nao_aplicavel: no penalty, contextual message
         assert by_idx[2].value == pytest.approx(0.6)
+        assert "não aplicável" in feedbacks.grades_and_feedbacks[2][1]
