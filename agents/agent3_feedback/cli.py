@@ -162,6 +162,9 @@ def _run_gui() -> int:
                 output_file = _output_path_for_diagram(output_dir, diagram_path, multiple)
                 output_file.parent.mkdir(parents=True, exist_ok=True)
                 output_file.write_text(payload, encoding="utf-8")
+                output_file.with_suffix(".md").write_text(
+                    agent.serialize_markdown(feedback), encoding="utf-8"
+                )
             messagebox.showinfo("Concluído", f"Arquivos salvos em: {output_dir}")
         except Exception as exc:  # keep explicit
             messagebox.showerror("Erro", str(exc))
@@ -225,6 +228,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_file = Path(output_path)
         output_file.write_text(payload, encoding="utf-8")
         print(f"Saída salva em: {output_file}")
+        report_file = output_file.with_suffix(".md")
+        report_file.write_text(agent.serialize_markdown(feedback), encoding="utf-8")
+        print(f"Relatório para o estudante salvo em: {report_file}")
     
 
     return 0
