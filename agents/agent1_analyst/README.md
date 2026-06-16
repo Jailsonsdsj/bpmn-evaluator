@@ -1,131 +1,77 @@
-# Agent 1 — Criteria Mapper
+# Agent 1 — Criteria Mapper (Agent1Analyst)
 
-Receives the BPMN diagram JSON and the evaluation checklist.
-For each criterion, maps whether the corresponding element is cumprido, nao_cumprido, nao_aplicavel, or nao_avaliado.
-Outputs a list of `BPMNEvidence` objects — no judgment, only evidence mapping.
+Resumo
+------
+O Agent 1 recebe um diagrama BPMN (JSON/PNG/PDF) e a checklist de avaliação e produz uma lista de evidências (BPMNEvidence). Ele não decide pontuações: mapeia apenas se cada critério foi cumprido, não cumprido, não aplicável ou não avaliado.
 
-## Implementação
+Por que isso importa
+--------------------
+- Garante auditabilidade: toda decisão é baseada em elementos presentes no diagrama.
+- Evita alocações de nota automatizadas nessa etapa — isso fica para o Agent 2/3.
 
-- Classe principal: `Agent1Analyst` em `agent.py`
-- Contrato de saída: `BPMNEvidence` (em `agents/contracts.py`)
-- Entrada: dicionário com chaves `diagram` e `checklist`, ou arquivos via `run_from_files(...)`
-  - `diagram`: JSON **ou** imagem (`.png`, `.jpg`, `.jpeg`) **ou** PDF
-  - `checklist`: JSON **ou** TXT no formato `[(categoria, criterio), ...]` **ou** CSV (colunas: `Categoria`, `Itens avaliados`)
-  - O diagrama aceita `elements/flows` e também aliases comuns (`nodes`, `connections`, `sequence_flows`, etc.)
+Contrato de entrada/saída
+-------------------------
+- Entrada: `diagram` (JSON/PNG/PDF) e `checklist` (CSV/JSON/TXT).
+- Saída: lista serializável de `BPMNEvidence` (ver `agents/contracts.py`).
 
-**Observação:** para diagramas em imagem ou PDF, o Agent 1 usa o modelo configurado via `ANTHROPIC_API_KEY` e `MODEL_NAME` no `.env`.
+Status possíveis em cada evidência
+----------------------------------
+- `cumprido`: critério claramente atendido.
+- `nao_cumprido`: critério existe no diagrama mas não atende.
+- `nao_aplicavel`: elemento de referência ausente → critério fora de escopo.
+- `nao_avaliado`: evidência insuficiente para decidir (requer revisão humana).
 
-### Campo `value`
+Regra importante: `nao_aplicavel` vs `nao_cumprido`
+-------------------------------------------------
+Um critério é `nao_aplicavel` apenas quando o elemento de referência NÃO existe no diagrama. Se o elemento existe e viola a regra, o status deve ser `nao_cumprido`.
 
-O `BPMNEvidence` inclui `value` (0–1) com base na pontuação do checklist:
+Campo `value`
+--------------
+`value` copia a penalidade indicada no checklist (se presente). Caso o checklist não informe pontuação, usa-se fallback: `cumprido=1.0`, outros=0.0.
 
-- Quando o checklist fornece pontuação, `value = pontuação` se `cumprido` e `value = 0.0` se `nao_cumprido/nao_aplicavel/nao_avaliado`.
-- Se não houver pontuação no checklist, o fallback é: `cumprido = 1.0`, `nao_cumprido = 0.0`, `nao_aplicavel = 0.0`, `nao_avaliado = 0.0`.
-
-### Significado dos Status
-
-- **`cumprido`**: Critério claramente atendido no diagrama
-- **`nao_cumprido`**: Critério não atendido; há evidência clara de falha
-- **`nao_aplicavel`**: Critério não se aplica a este diagrama (ex: critério sobre pools em diagrama sem pools)
-- **`nao_avaliado`**: Critério não pôde ser avaliado; Agent 1 não conseguiu coletar evidências suficientes para julgar (requer análise manual ou critério muito vago)
-
-#### Distinção crítica: `nao_aplicavel` vs `nao_cumprido`
-
-**Regra de ouro:** Um critério é `nao_aplicavel` quando **o elemento de referência não existe no diagrama**.
-
-| Cenário | Status | Motivo |
-|---------|--------|--------|
-| Critério: "Link events have names?" <br/> Diagrama: Sem eventos de link | `nao_aplicavel` | Elemento de referência (link events) não existe |
-| Critério: "Link events have names?" <br/> Diagrama: Tem link events, mas sem nomes | `nao_cumprido` | Elemento existe, mas não atende critério |
-| Critério: "Activities in different lanes?" <br/> Diagrama: Sem raias | `nao_aplicavel` | Elemento de referência (lanes) não existe |
-| Critério: "Activities in different lanes?" <br/> Diagrama: Tem raias, mas activities em mesma raia | `nao_cumprido` | Elemento existe, mas não atende critério |
-| Critério: "End event for interrupting flow?" <br/> Diagrama: Sem fluxos interrompidos | `nao_aplicavel` | Elemento de referência (interrupting flows) não existe |
-| Critério: "End event for interrupting flow?" <br/> Diagrama: Tem fluxo interrompido, mas sem end event | `nao_cumprido` | Elemento existe, mas não atende critério |
-
-**Exemplos do checklist curso:**
-- **SI14** ("Todas as atividades em raias diferentes?"): Se diagrama não tem raias → `nao_aplicavel`
-- **SI7** ("End event quando fluxo interrompido?"): Se diagrama não tem fluxos interrompidos → `nao_aplicavel`
-- **SI16** ("Link events have names?"): Se diagrama não tem link events → `nao_aplicavel`
-
-### Campo `observation`
-
-Quando não há observação específica, o Agent 1 gera uma mensagem padrão baseada no status:
-- Para `cumprido`: "Critério atendido"
-- Para `nao_cumprido`: "Critério não atendido" + motivo se disponível
-- Para `nao_aplicavel`: "Critério não aplicável" + razão
-- Para `nao_avaliado`: "Critério não avaliado" + explicação de que não há evidência
-
-### Exemplo rápido
-
+Exemplo de uso rápido
+---------------------
 ```python
 from agents.agent1_analyst import Agent1Analyst
-
 agent = Agent1Analyst()
-evidences = agent.run_from_files("evaluation/dataset/diagram_001.json", "evaluation/dataset/checklist.txt")
+evidences = agent.run_from_files("evaluation/dataset/diagram_001.json", "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv")
 print(agent.serialize(evidences))
 ```
 
-## Execução via terminal
-
-### Pré-requisitos
-
-Ative a venv e instale as dependências:
-
+Modo CLI / Execução
+-------------------
+Pré-requisitos:
 ```bash
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-No `.env`, configure as variáveis (obrigatórias para imagem/PDF):
-
-```
-ANTHROPIC_API_KEY=...
-MODEL_NAME=...
-```
-
-Ao rodar sem argumentos, a **interface gráfica** é aberta automaticamente:
-
-```bash
-python -m agents.agent1_analyst
-```
-
-A GUI permite anexar **vários diagramas**, anexar o checklist e executar.  
-A pasta de saída é escolhida **no final** e o arquivo é salvo como `BPMNEvidence.json`.
-
-Se mais de um diagrama for anexado, cada saída fica em uma subpasta com o nome do diagrama:
-
-```
-<pasta_saida>\<nome_do_diagrama>\BPMNEvidence.json
-```
-
-Modo interativo (pergunta os caminhos no terminal):
-
+Rodar em modo interativo (pergunta caminhos no terminal):
 ```bash
 python -m agents.agent1_analyst --interactive
 ```
 
-Modo direto com argumentos:
-
+Rodar direto (arquivo de entrada → saída):
 ```bash
-python -m agents.agent1_analyst --diagram evaluation/dataset/diagram_001.json --checklist evaluation/dataset/checklist.json
+python -m agents.agent1_analyst --diagram evaluation/dataset/diagram_001.json --checklist evaluation/dataset/Checklist.csv --output evaluation/results
 ```
 
-Imagem como diagrama:
+Suporte a PDF/Imagem
+--------------------
+PDFs e imagens exigem chaves de API (visão/OCR) e o `MODEL_NAME` apropriado no `.env`.
 
-```bash
-python -m agents.agent1_analyst --diagram evaluation/dataset/diagram_001.png --checklist evaluation/dataset/checklist.csv
-```
+Dicas de troubleshooting
+------------------------
+- Se um critério está marcado `nao_aplicavel` mas você espera `nao_cumprido`, verifique se o elemento de referência realmente existe no JSON.
+- Não edite `evaluation/dataset/` diretamente — crie cópias para testes.
+- Para debug rápido, serialize a saída e inspecione o campo `observation` em cada evidence.
 
-PDF como diagrama:
+Referências
+----------
+- Contratos: `agents/contracts.py` (BPMNEvidence)
+- Pipeline orchestration: `main.py` (Agent 1 → Agent 2 → Agent 3)
 
-```bash
-python -m agents.agent1_analyst --diagram evaluation/dataset/diagram_001.pdf --checklist evaluation/dataset/checklist.csv
-```
-
-Para salvar em arquivo:
-
-```bash
-python -m agents.agent1_analyst --diagram evaluation/dataset/diagram_001.json --checklist evaluation/dataset/checklist.json --output evaluation/results
-```
-
-Com `--output`, o arquivo final também é `BPMNEvidence.json`.
+Licença / Contribuição
+----------------------
+Faça PRs para a branch `develop`. Consulte o guia de commits no repositório.
