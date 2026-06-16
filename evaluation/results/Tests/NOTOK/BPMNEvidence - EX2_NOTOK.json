@@ -41,7 +41,7 @@
     "status": "cumprido",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Cada piscina possui evento(s) de fim: Candidato eliminado, Funcionário integrado. Pontuação: 0.2.",
+    "observation": "Critério atendido. Motivo: Cada piscina possui evento(s) de fim: idv55pArqXxb. Pontuação: 0.2.",
     "question": "Evento final foi inserido para cada piscina?"
   },
   {
@@ -113,7 +113,7 @@
     "status": "cumprido",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todas as 11 tarefas estão associadas a exatamente uma piscina. Pontuação: 0.2.",
+    "observation": "Critério atendido. Motivo: Todas as 12 tarefas estão associadas a exatamente uma piscina. Pontuação: 0.2.",
     "question": "As tarefas estão associadas a apenas uma raia?"
   },
   {
@@ -131,7 +131,7 @@
     "status": "cumprido",
     "value": 0.3,
     "element": "tarefas",
-    "observation": "Critério atendido. Motivo: 11 tarefa(s) modeladas (ex: Reunir com o gestor da vaga, Realizar integração e treinamentos, Divulgar vaga). Pontuação: 0.3.",
+    "observation": "Critério atendido. Motivo: 12 tarefa(s) modeladas (ex: Reunir com o gestor da vaga, Realizar integração e treinamentos, Receber pedidos de contratação). Pontuação: 0.3.",
     "question": "As tarefas esperadas para o processo foram modeladas?"
   },
   {
@@ -149,7 +149,7 @@
     "status": "cumprido",
     "value": 0.4,
     "element": "eventos",
-    "observation": "Critério atendido. Motivo: 4 evento(s) modelado(s) no diagrama. Pontuação: 0.4.",
+    "observation": "Critério atendido. Motivo: 3 evento(s) modelado(s) no diagrama. Pontuação: 0.4.",
     "question": "Os eventos esperados foram modelados?"
   },
   {
@@ -173,19 +173,19 @@
   {
     "criterion_id": "semantics_1",
     "category": "semantics",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.75,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todas as 11 tarefas possuem fluxo de entrada. Pontuação: 0.75.",
+    "observation": "Critério não atendido. Motivo: Tarefa(s) sem fluxo de entrada: Selecionar candidato juntamente com o RH. Pontuação: 0.75.",
     "question": "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?"
   },
   {
     "criterion_id": "semantics_2",
     "category": "semantics",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.75,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Todas as 11 tarefas possuem exatamente 1 fluxo de saída. Pontuação: 0.75.",
+    "observation": "Critério não atendido. Motivo: Tarefa(s) com número incorreto de fluxos de saída: 'Realizar entrevista técnica' (0 saída(s)), 'Candidato eliminado' (0 saída(s)). Pontuação: 0.75.",
     "question": "Todas as tarefas possuem apenas um fluxo de saída?"
   },
   {
@@ -203,16 +203,16 @@
     "status": "nao_avaliado",
     "value": 0.25,
     "element": "Todas as tarefas estão dispostas na raia do responsável correto?",
-    "observation": "Critério não avaliado. Motivo: Raias detectadas no diagrama. Piscina 'Processo de contratação' com raias: Gestor do departamento, Recursos Humanos. Atribuição correta de tarefas requer dados espaciais e enunciado do processo. Pontuação: 0.25.",
+    "observation": "Critério não avaliado. Motivo: Raias detectadas no diagrama. Piscina '' com raias: Gestor do departamento, Recursos Humanos. Atribuição correta de tarefas requer dados espaciais e enunciado do processo. Pontuação: 0.25.",
     "question": "Todas as tarefas estão dispostas na raia do responsável correto?"
   },
   {
     "criterion_id": "best_practices_1",
     "category": "best_practices",
-    "status": "cumprido",
+    "status": "nao_cumprido",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Eventos de início/fim com rótulo: 'Necessidade de contratação' (início), 'Candidato eliminado' (fim), 'Funcionário integrado' (fim). Pontuação: 0.2.",
+    "observation": "Critério não atendido. Motivo: Evento de fim sem rótulo (idv55pArqXxb). Pontuação: 0.2.",
     "question": "Evento de início e fim possuem rótulo?"
   },
   {
@@ -254,10 +254,10 @@
   {
     "criterion_id": "best_practices_6",
     "category": "best_practices",
-    "status": "cumprido",
+    "status": "nao_avaliado",
     "value": 0.2,
-    "element": "Processo de contratação",
-    "observation": "Critério atendido. Motivo: Nome da piscina 'Processo de contratação' corresponde ao processo descrito no enunciado (palavras-chave encontradas: contratação, processo). Pontuação: 0.2.",
+    "element": "pool",
+    "observation": "Critério não avaliado. Motivo: Piscina sem nome — não foi possível comparar com o enunciado. Pontuação: 0.2.",
     "question": "O nome da piscina corresponde ao nome do processo?"
   },
   {
@@ -293,7 +293,7 @@
     "status": "cumprido",
     "value": 0.2,
     "element": "diagrama",
-    "observation": "Critério atendido. Motivo: Nenhuma tarefa redundante (11 tarefas com nomes únicos). Pontuação: 0.2.",
+    "observation": "Critério atendido. Motivo: Nenhuma tarefa redundante (12 tarefas com nomes únicos). Pontuação: 0.2.",
     "question": "As tarefas redundantes foram excluídas?"
   },
   {
