@@ -12,7 +12,7 @@
         "value": 0.3,
         "category": "O conector “fluxo de mensagem” está sendo utilizado apenas entre piscinas?"
       },
-      "Critério não aplicável a este diagrama (Agent 1 appropriately marked this as non-applicable since the diagram contains only one pool. Message flows are only relevant between pools, so the criterion genuinely does not apply. The reasoning is sound and well-supported.)"
+      "Critério não aplicável a este diagrama (Agent 1 correctly marks this as not applicable since the diagram contains only one pool. Message flows are only relevant between pools, so the criterion genuinely does not apply to this single-pool diagram.)"
     ],
     [
       {
@@ -47,7 +47,7 @@
         "value": 0.3,
         "category": "Evento de término estabelecido quando o fluxo é interrompido por alguma inconsistência ou em algum fluxo alternativo?"
       },
-      "Critério não aplicável a este diagrama (Agent 1 marked this non-applicable because the diagram has no interrupted flows. However, the presence of two end events ('Candidato eliminado' suggests a rejection path) indicates there ARE alternative flows. This judgment appears questionable - the criterion may actually apply to the rejection path.)"
+      "Critério não aplicável a este diagrama (Agent 1 marks this as not applicable, stating the diagram has no interrupted flows. However, the evidence from semantics_2 shows tasks with 0 outgoing flows ('Realizar entrevista técnica', 'Candidato eliminado'), which could represent interrupted flows. This judgment appears questionable.)"
     ],
     [
       {
@@ -135,17 +135,17 @@
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.05,
         "category": "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?"
       },
-      "✓ Critério atendido com sucesso."
+      "**Feedback:**\n\nA tarefa \"Selecionar candidato juntamente com o RH\" está desconectada do fluxo - ela não possui nenhuma seta de entrada indicando quando deve ser executada. Conecte-a após as entrevistas (comportamental e técnica) para que o processo fique sequencial e completo. Toda tarefa precisa ter pelo menos uma conexão de entrada e uma de saída."
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.05,
         "category": "Todas as tarefas possuem apenas um fluxo de saída?"
       },
-      "✓ Critério atendido com sucesso."
+      "**Feedback:**\n\nDuas tarefas estão sem fluxo de saída: \"Realizar entrevista técnica\" e \"Candidato eliminado\". Toda tarefa deve ter pelo menos uma seta saindo dela, indicando o próximo passo do processo. Conecte \"Realizar entrevista técnica\" à tarefa \"Selecionar candidato juntamente com o RH\" e \"Candidato eliminado\" a um evento de fim apropriado."
     ],
     [
       {
@@ -163,10 +163,10 @@
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.16000000000000003,
         "category": "Evento de início e fim possuem rótulo?"
       },
-      "✓ Critério atendido com sucesso."
+      "**Feedback:**\n\nO evento de fim (círculo após \"Realizar integração e treinamentos\") está sem rótulo. Todo evento de término deve indicar claramente o resultado final do processo, como \"Contratação concluída\" ou \"Novo funcionário integrado\". Adicione um texto descritivo que represente o estado final alcançado."
     ],
     [
       {
@@ -180,7 +180,7 @@
         "value": 0.16000000000000003,
         "category": "Os gateways possuem uma convergência quando aplicável?"
       },
-      "**Feedback:**\n\nOs gateways \"Resultado da triagem\" e \"Resultado da proposta\" abrem fluxos paralelos mas não possuem gateways de convergência correspondentes. Após os caminhos alternativos (candidato selecionado/descartado e oferta aceita/recusada), você deveria adicionar gateways exclusivos de convergência antes de prosseguir para as próximas etapas, garantindo que todos os caminhos se encontrem novamente em um ponto comum do processo."
+      "**Feedback:**\n\nSeu diagrama possui dois gateways divergentes (\"Resultado da triagem\" e \"Resultado da proposta\") que abrem fluxos paralelos, mas não há gateways de convergência para unificar esses caminhos posteriormente. Após o gateway \"Resultado da triagem\", os fluxos \"Selecionado\" e \"Descartado\" deveriam convergir antes de prosseguir. O mesmo ocorre com \"Resultado da proposta\" - os caminhos \"Oferta aceita\" e \"Oferta recusada\" precisam convergir em um gateway antes do processo finalizar, garant..."
     ],
     [
       {
@@ -198,10 +198,10 @@
     ],
     [
       {
-        "value": 0.2,
+        "value": 0.0,
         "category": "O nome da piscina corresponde ao nome do processo?"
       },
-      "✓ Critério atendido com sucesso."
+      "Não avaliado"
     ],
     [
       {
@@ -222,7 +222,7 @@
         "value": 0.2,
         "category": "A nomenclatura dos objetos, tarefas, subprocessos, piscinas e raias está padronizada? (exemplo, tamanho, dentro ou fora do elemento, acima, abaixo ou ao lado)"
       },
-      "Critério não aplicável a este diagrama (Agent 1 marked this non-applicable because there are no subprocesses. However, the criterion also asks about standardization of tasks, pools, and lanes - which DO exist. This judgment appears to misinterpret the criterion scope.)"
+      "Critério não aplicável a este diagrama (Agent 1 marks this as not applicable because the diagram lacks subprocesses. However, the criterion asks about standardization across multiple element types (objects, tasks, pools, lanes), not just subprocesses. This judgment may be too narrow.)"
     ],
     [
       {

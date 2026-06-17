@@ -12,7 +12,7 @@
         "value": 0.3,
         "category": "O conector “fluxo de mensagem” está sendo utilizado apenas entre piscinas?"
       },
-      "Critério não aplicável a este diagrama (Agent 1 appropriately marked this as non-applicable since the diagram contains only one pool. Message flows are only relevant between pools, so the criterion genuinely does not apply. The reasoning is sound and well-supported.)"
+      "Critério não aplicável a este diagrama (Agent 1 appropriately marks this as non-applicable since the diagram contains only one pool. Message flows are only relevant between pools, so the criterion genuinely does not apply. The reasoning is sound and well-supported.)"
     ],
     [
       {
@@ -47,7 +47,7 @@
         "value": 0.3,
         "category": "Evento de término estabelecido quando o fluxo é interrompido por alguma inconsistência ou em algum fluxo alternativo?"
       },
-      "Critério não aplicável a este diagrama (Agent 1 marked this non-applicable because the diagram has no interrupted flows. However, the presence of two end events ('Candidato eliminado' suggests a rejection path) indicates there ARE alternative flows. This judgment appears questionable - the criterion may actually apply to the rejection path.)"
+      "Critério não aplicável a este diagrama (Agent 1 marks this non-applicable, stating the diagram has no interrupted flows. Without evidence of exceptions or alternative termination paths requiring special end events, this judgment appears reasonable. However, the two end events identified earlier suggest alternative paths exist, creating some uncertainty about whether this truly doesn't apply.)"
     ],
     [
       {
@@ -180,7 +180,7 @@
         "value": 0.16000000000000003,
         "category": "Os gateways possuem uma convergência quando aplicável?"
       },
-      "**Feedback:**\n\nOs gateways \"Resultado da triagem\" e \"Resultado da proposta\" abrem fluxos paralelos mas não possuem gateways de convergência correspondentes. Após os caminhos alternativos (candidato selecionado/descartado e oferta aceita/recusada), você deveria adicionar gateways exclusivos de convergência antes de prosseguir para as próximas etapas, garantindo que todos os caminhos se encontrem novamente em um ponto comum do processo."
+      "**Feedback sobre Convergência de Gateways:**\n\nSeu diagrama possui dois gateways divergentes (\"Resultado da triagem\" e \"Resultado da proposta\") que não convergem posteriormente. Em BPMN, quando um gateway abre caminhos alternativos que depois se unem, é necessário um gateway de convergência. No seu caso, após \"Resultado da proposta\", ambos os caminhos (oferta aceita/recusada) levam a \"Enviar oferta ao candidato\" - aqui deveria haver um gateway exclusivo de convergência antes dessa tarefa. Isso to..."
     ],
     [
       {
@@ -222,7 +222,7 @@
         "value": 0.2,
         "category": "A nomenclatura dos objetos, tarefas, subprocessos, piscinas e raias está padronizada? (exemplo, tamanho, dentro ou fora do elemento, acima, abaixo ou ao lado)"
       },
-      "Critério não aplicável a este diagrama (Agent 1 marked this non-applicable because there are no subprocesses. However, the criterion also asks about standardization of tasks, pools, and lanes - which DO exist. This judgment appears to misinterpret the criterion scope.)"
+      "Critério não aplicável a este diagrama (Agent 1 marks this as non-applicable because the diagram has no subprocesses. However, the criterion asks about standardization across objects, tasks, pools, and lanes—not just subprocesses. The non-applicability judgment may be too narrow. This criterion could still apply to other elements.)"
     ],
     [
       {
