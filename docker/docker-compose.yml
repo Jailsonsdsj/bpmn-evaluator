@@ -35,12 +35,12 @@ services:
   #     --output evaluation/results/BPMNEvidence.json
   agent1:
     <<: *common
-    entrypoint: ["python", "-m", "agents.agent1_analyst"]
+    entrypoint: ["/usr/local/bin/entrypoint.sh", "python", "-m", "agents.agent1_analyst"]
 
   agent2:
     <<: *common
-    entrypoint: ["python", "-m", "agents.agent2_evaluator"]
+    entrypoint: ["/usr/local/bin/entrypoint.sh", "python", "-m", "agents.agent2_evaluator"]
 
   agent3:
     <<: *common
-    entrypoint: ["python", "-m", "agents.agent3_feedback"]
+    entrypoint: ["/usr/local/bin/entrypoint.sh", "python", "-m", "agents.agent3_feedback"]
