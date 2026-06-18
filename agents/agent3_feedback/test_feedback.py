@@ -1,158 +1,264 @@
-"""Tests for Agent 3 — feedback.
+"""Tests for Agent 3 — deterministic grading, feedback coverage, student report.
 
 All LLM calls are mocked; no network access required.
 """
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import asdict
-from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ..contracts import ItemGrade
-from agents.contracts import BPMNAssessment, BPMNEvidence
-from agents.agent3_feedback.agent import (
-    Agent3Feedback
-)
-from agents.agent3_feedback.chains import *
-from agents.agent3_feedback.cli import *
+from agents.contracts import BPMNAssessment, BPMNFeedback, CategoryGrade, FeedbackItem
+from agents.agent3_feedback.agent import Agent3Feedback
+from agents.agent3_feedback.chains import COVERAGE_MARKER, render_grade_table
+from agents.agent3_feedback.grading import compute_grades
 
 
 # ---------------------------------------------------------------------------
 # Fixtures / helpers
 # ---------------------------------------------------------------------------
 
-def make_evidence(
-    criterion_id: str = "syntax_1",
-    status: str = "nao_cumprido",
-    value: float = 0.20,
-    category: str = "syntax",
-) -> BPMNEvidence:
-    return BPMNEvidence(
-        criterion_id=criterion_id,
-        category=category,
-        status=status,
-        value=value,
-        element="elem",
-        observation=None,
-        question="Is this criterion met?",
-    )
+DIAGRAM = {
+    "id": "d1",
+    "name": "Processo de teste",
+    "elements": [
+        {"id": "e1", "type": "startEvent", "name": "Início", "outgoing": ["f1"]},
+        {"id": "t1", "type": "task", "name": "Tarefa", "incoming": ["f1"], "outgoing": ["f2"]},
+        {"id": "e2", "type": "endEvent", "name": "Fim", "incoming": ["f2"]},
+    ],
+    "flows": [
+        {"id": "f1", "source": "e1", "target": "t1"},
+        {"id": "f2", "source": "t1", "target": "e2"},
+    ],
+}
+
+ENUNCIADO = "Modele o processo de compra de materiais."
 
 
 def make_assessment(
     criterion_id: str = "syntax_1",
     status: str = "nao_cumprido",
-    checklist_penalty: float = 0.20,
     applied_penalty: float = 0.20,
-    confidence: float = 0.50,
     category: str = "syntax",
+    category_weight: float = 0.30,
+    question: str = "O critério foi atendido?",
 ) -> BPMNAssessment:
     return BPMNAssessment(
         criterion_id=criterion_id,
         category=category,
-        category_weight=1.0,
+        category_weight=category_weight,
         status=status,
-        checklist_penalty=checklist_penalty,
+        checklist_penalty=applied_penalty,
         applied_penalty=applied_penalty,
-        justification="test justification",
-        confidence=confidence,
-        flag_review=confidence < 0.6,
-        plan_log=None,
+        justification="justificativa de teste",
+        confidence=0.8,
+        flag_review=False,
         element="elem",
-        question="Is this criterion met?",
+        plan_log=None,
+        question=question,
     )
-def make_assessments(assessment_args: list[BPMNAssessment]):
-    assessments = [asdict(asseessment) for asseessment in assessment_args]
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    path = os.path.join("evaluation", "results", f"assessment_{ts}.json")
-    with open(path, "w") as f:
-        json.dump({"assessments": assessments}, f, indent=2)
-    return path
 
 
-def llm_response(results: list[dict]) -> MagicMock:
-    """Return a mock anthropic API response whose content block holds the JSON list."""
-    block = MagicMock()
-    block.type = "text"
-    block.text = json.dumps(results)
-    response = MagicMock()
-    response.content = [block]
-    return response
+def make_payload(assessments: list[BPMNAssessment]) -> dict:
+    return {"diagram": DIAGRAM, "assessment": assessments, "enunciado": ENUNCIADO}
 
 
-def bad_response(text: str = "not valid json {{{") -> MagicMock:
-    block = MagicMock()
-    block.type = "text"
-    block.text = text
-    response = MagicMock()
-    response.content = [block]
-    return response
-
-
-DIAGRAM_PATH = "evaluation/dataset/diagram_001.json"
-ENUNCIADO_PATH = "evaluation/dataset/Instruções.txt"
-
-# ---------------------------------------------------------------------------
-# Pure Python — no mocking required
-# ---------------------------------------------------------------------------
+def report_with_markers(items_ids: list[str], final_grade: float, grades: list[CategoryGrade]) -> str:
+    """A well-formed report: grade table verbatim + one marked section per error."""
+    sections = "\n\n".join(
+        f"{COVERAGE_MARKER.format(criterion_id=cid)}\n### Erro {cid}\nTexto." for cid in items_ids
+    )
+    return f"# Avaliação\n\n## Resultado\n\n{render_grade_table(final_grade, grades)}\n\n## Pontos a melhorar\n\n{sections}"
 
 
 # ---------------------------------------------------------------------------
-# Tests with LLM mocking — applied_penalty rules
+# Job 1 — deterministic grading (pure Python, no mocks)
 # ---------------------------------------------------------------------------
 
-class TestAppliedPenalty:
-    @patch("agents.agent3_feedback.agent.read_diagram_file")
-    @patch("agents.agent3_feedback.agent.read_bpmnassessment_file")
-    @patch("agents.agent3_feedback.agent.map_assessment_chain")
-    @patch("agents.agent3_feedback.agent.get_chat_model")
-    def test_cumprido_applied_grade_is_correct(self, mock_get_llm, mock_chain, mock_read_assessment, mock_read_diagram):
-        mock_read_diagram.return_value = {"elements": [], "flows": []}
-        mock_read_assessment.return_value = [make_assessment("syntax_1", "cumprido", checklist_penalty=0.20)]
-        mock_chain.return_value = "Correto"
-        
-        agent = Agent3Feedback()
-        feedbacks = agent.run_from_files(
-            diagram_path=DIAGRAM_PATH, enunciado_path=ENUNCIADO_PATH, assessment_path="dummy"
-        )
-        assert feedbacks.grades_and_feedbacks[0][0].value == 1.0
-        # cumprido items should have positive feedback, not "Sem problemas"
-        assert "✓" in feedbacks.grades_and_feedbacks[0][1] or "Critério atendido" in feedbacks.grades_and_feedbacks[0][1]
+class TestComputeGrades:
+    def test_cumprido_does_not_subtract(self):
+        final, grades = compute_grades([make_assessment(status="cumprido", applied_penalty=0.0)])
+        assert final == pytest.approx(3.0)  # syntax max = 0.30 * 10
+        assert grades[0].penalty == 0.0
 
-    @patch("agents.agent3_feedback.agent.read_diagram_file")
-    @patch("agents.agent3_feedback.agent.read_bpmnassessment_file")
-    @patch("agents.agent3_feedback.agent.map_assessment_chain")
-    @patch("agents.agent3_feedback.agent.get_chat_model")
-    def test_mixed_statuses_in_one_call(self, mock_get_llm, mock_chain, mock_read_assessment, mock_read_diagram):
-        mock_read_diagram.return_value = {"elements": [], "flows": []}
-        
+    def test_nao_aplicavel_never_subtracts_even_with_penalty(self):
+        # Real-world case: a bad upstream edit leaves applied_penalty > 0 on nao_aplicavel
+        final, grades = compute_grades([make_assessment(status="nao_aplicavel", applied_penalty=0.4)])
+        assert final == pytest.approx(3.0)
+        assert grades[0].penalty == 0.0
+
+    def test_nao_cumprido_subtracts_applied_penalty(self):
+        final, grades = compute_grades([make_assessment(status="nao_cumprido", applied_penalty=0.8)])
+        assert final == pytest.approx(2.2)
+        assert grades[0].penalty == pytest.approx(0.8)
+        assert grades[0].max_score == pytest.approx(3.0)
+
+    def test_category_breakdown_and_final_grade(self):
         assessments = [
-            make_assessment("syntax_1",   "cumprido",     applied_penalty = 0.0),
-            make_assessment("syntax_2",   "nao_cumprido", applied_penalty = 0.30),
-            make_assessment("proposal_1", "nao_aplicavel", applied_penalty = 0.40),
+            make_assessment("syntax_1", "nao_cumprido", 0.5, "syntax", 0.30),
+            make_assessment("syntax_2", "cumprido", 0.0, "syntax", 0.30),
+            make_assessment("proposal_1", "nao_cumprido", 0.3, "proposal", 0.20),
+            make_assessment("readability_1", "nao_aplicavel", 0.0, "readability", 0.10),
         ]
-        mock_read_assessment.return_value = assessments
-        mock_chain.side_effect = [
-            "não ok",  # For nao_cumprido item
+        final, grades = compute_grades(assessments)
+        by_cat = {g.category: g for g in grades}
+        assert by_cat["syntax"].score == pytest.approx(2.5)       # 3.0 - 0.5
+        assert by_cat["proposal"].score == pytest.approx(1.7)     # 2.0 - 0.3
+        assert by_cat["readability"].score == pytest.approx(1.0)  # 1.0 - 0
+        assert final == pytest.approx(5.2)
+
+    def test_category_score_floors_at_zero(self):
+        assessments = [
+            make_assessment(f"readability_{i}", "nao_cumprido", 0.8, "readability", 0.10)
+            for i in range(3)  # 2.4 penalty > 1.0 max
         ]
-        
-        agent = Agent3Feedback()
-        feedbacks = agent.run_from_files(
-            diagram_path=DIAGRAM_PATH, enunciado_path=ENUNCIADO_PATH, assessment_path="dummy"
+        final, grades = compute_grades(assessments)
+        assert grades[0].score == 0.0
+        assert final == 0.0
+
+    def test_categories_follow_checklist_order(self):
+        assessments = [
+            make_assessment("readability_1", category="readability", category_weight=0.10),
+            make_assessment("syntax_1", category="syntax", category_weight=0.30),
+        ]
+        _, grades = compute_grades(assessments)
+        assert [g.category for g in grades] == ["syntax", "readability"]
+
+
+# ---------------------------------------------------------------------------
+# Job 2 + Goal Monitoring + student report (LLM mocked)
+# ---------------------------------------------------------------------------
+
+@patch("agents.agent3_feedback.agent.get_chat_model")
+@patch("agents.agent3_feedback.agent.student_report_chain")
+@patch("agents.agent3_feedback.agent.map_assessment_chain")
+class TestAgentRun:
+    def test_one_feedback_item_per_error_even_with_zero_penalty(
+        self, mock_chain, mock_report, mock_llm
+    ):
+        # nao_cumprido with applied_penalty=0 (human zeroed it) still gets feedback
+        assessments = [
+            make_assessment("syntax_1", "nao_cumprido", 0.5),
+            make_assessment("syntax_2", "nao_cumprido", 0.0),
+            make_assessment("syntax_3", "cumprido", 0.0),
+            make_assessment("syntax_4", "nao_aplicavel", 0.0),
+        ]
+        mock_chain.return_value = "feedback gerado"
+        mock_report.side_effect = lambda llm, e, t, items, s: report_with_markers(
+            [it.criterion_id for it in items], *compute_grades(assessments)
         )
-        by_idx: list[ItemGrade] = [a[0] for a in feedbacks.grades_and_feedbacks]
-        
-        # cumprido: full score, positive message
-        assert by_idx[0].value == pytest.approx(1.0)
-        assert "✓" in feedbacks.grades_and_feedbacks[0][1] or "Critério atendido" in feedbacks.grades_and_feedbacks[0][1]
-        
-        # nao_cumprido: penalty applied, LLM feedback
-        assert by_idx[1].value == pytest.approx(0.7)
-        assert feedbacks.grades_and_feedbacks[1][1] == "não ok"
-        
-        # nao_aplicavel: no penalty, contextual message
-        assert by_idx[2].value == pytest.approx(0.6)
-        assert "não aplicável" in feedbacks.grades_and_feedbacks[2][1]
+        feedback = Agent3Feedback().run(make_payload(assessments))
+
+        assert [it.criterion_id for it in feedback.feedback_items] == ["syntax_1", "syntax_2"]
+        assert mock_chain.call_count == 2
+        assert all(it.feedback == "feedback gerado" for it in feedback.feedback_items)
+
+    def test_coverage_retry_then_fallback(self, mock_chain, mock_report, mock_llm):
+        # First call empty -> one retry; retry also empty -> deterministic fallback
+        mock_chain.side_effect = ["", ""]
+        mock_report.return_value = ""
+        assessments = [make_assessment("syntax_1", "nao_cumprido", 0.5)]
+        feedback = Agent3Feedback().run(make_payload(assessments))
+
+        assert mock_chain.call_count == 2
+        item = feedback.feedback_items[0]
+        assert item.feedback.strip()
+        assert "justificativa de teste" in item.feedback
+
+    def test_feedback_llm_exception_degrades_gracefully(self, mock_chain, mock_report, mock_llm):
+        # An LLM exception on every feedback call must NOT crash the run: the
+        # item falls back to the Agent 2 justification (retry also raises).
+        mock_chain.side_effect = RuntimeError("rate limit")
+        mock_report.return_value = ""
+        assessments = [make_assessment("syntax_1", "nao_cumprido", 0.5)]
+        feedback = Agent3Feedback().run(make_payload(assessments))
+
+        item = feedback.feedback_items[0]
+        assert item.feedback.strip()
+        assert "justificativa de teste" in item.feedback
+
+    def test_report_llm_exception_degrades_to_deterministic(self, mock_chain, mock_report, mock_llm):
+        # An exception from the student-report LLM must not crash the run; the
+        # report is rebuilt deterministically (error section + official table).
+        mock_chain.return_value = "feedback do erro"
+        mock_report.side_effect = RuntimeError("network down")
+        assessments = [make_assessment("syntax_1", "nao_cumprido", 0.5)]
+        feedback = Agent3Feedback().run(make_payload(assessments))
+
+        assert COVERAGE_MARKER.format(criterion_id="syntax_1") in feedback.student_report
+        assert "feedback do erro" in feedback.student_report
+        assert f"**Nota final: {feedback.final_grade:.2f} / 10**" in feedback.student_report
+
+    def test_strengths_collect_cumprido_questions(self, mock_chain, mock_report, mock_llm):
+        mock_report.return_value = ""
+        assessments = [
+            make_assessment("syntax_1", "cumprido", 0.0, question="Eventos nomeados?"),
+            make_assessment("syntax_2", "nao_aplicavel", 0.0, question="Mensagens entre pools?"),
+        ]
+        feedback = Agent3Feedback().run(make_payload(assessments))
+        assert feedback.strengths == ["Eventos nomeados?"]
+
+    def test_report_appends_missing_error_sections(self, mock_chain, mock_report, mock_llm):
+        # LLM report omits the error section -> Python appends it from FeedbackItem
+        mock_chain.return_value = "feedback do erro"
+        mock_report.return_value = "# Avaliação\n\nRelatório sem a seção do erro."
+        assessments = [make_assessment("syntax_1", "nao_cumprido", 0.5)]
+        feedback = Agent3Feedback().run(make_payload(assessments))
+
+        marker = COVERAGE_MARKER.format(criterion_id="syntax_1")
+        assert marker in feedback.student_report
+        assert "feedback do erro" in feedback.student_report
+
+    def test_report_restores_official_grade_table(self, mock_chain, mock_report, mock_llm):
+        # LLM report mangles/omits the grade line -> authoritative table appended
+        mock_report.return_value = "# Avaliação\n\nNota final: 9.99 / 10 (inventada)"
+        assessments = [make_assessment("syntax_1", "nao_cumprido", 0.5)]
+        feedback = Agent3Feedback().run(make_payload(assessments))
+
+        assert f"**Nota final: {feedback.final_grade:.2f} / 10**" in feedback.student_report
+
+    def test_report_kept_verbatim_when_complete(self, mock_chain, mock_report, mock_llm):
+        mock_chain.return_value = "feedback"
+        assessments = [make_assessment("syntax_1", "nao_cumprido", 0.5)]
+        good = report_with_markers(["syntax_1"], *compute_grades(assessments))
+        mock_report.return_value = good
+        feedback = Agent3Feedback().run(make_payload(assessments))
+        assert feedback.student_report == good
+
+    def test_serialize_roundtrip_has_contract_fields(self, mock_chain, mock_report, mock_llm):
+        mock_chain.return_value = "feedback"
+        mock_report.return_value = ""
+        assessments = [make_assessment("syntax_1", "nao_cumprido", 0.5)]
+        feedback = Agent3Feedback().run(make_payload(assessments))
+        data = json.loads(Agent3Feedback.serialize(feedback))
+        for key in ("final_grade", "category_grades", "feedback_items", "strengths", "student_report"):
+            assert key in data, f"missing field: {key}"
+
+
+# ---------------------------------------------------------------------------
+# run_from_files — file loading path
+# ---------------------------------------------------------------------------
+
+@patch("agents.agent3_feedback.agent.get_chat_model")
+@patch("agents.agent3_feedback.agent.student_report_chain")
+@patch("agents.agent3_feedback.agent.map_assessment_chain")
+def test_run_from_files(mock_chain, mock_report, mock_llm, tmp_path):
+    mock_chain.return_value = "feedback"
+    mock_report.return_value = ""
+
+    diagram_path = tmp_path / "diagram.json"
+    diagram_path.write_text(json.dumps(DIAGRAM), encoding="utf-8")
+    enunciado_path = tmp_path / "enunciado.txt"
+    enunciado_path.write_text(ENUNCIADO, encoding="utf-8")
+    assessment_path = tmp_path / "assessment.json"
+    assessment_path.write_text(
+        json.dumps({"assessments": [asdict(make_assessment("syntax_1", "nao_cumprido", 0.5))]}),
+        encoding="utf-8",
+    )
+
+    feedback = Agent3Feedback().run_from_files(enunciado_path, diagram_path, assessment_path)
+    assert isinstance(feedback, BPMNFeedback)
+    assert feedback.final_grade == pytest.approx(2.5)
+    assert feedback.feedback_items[0].criterion_id == "syntax_1"

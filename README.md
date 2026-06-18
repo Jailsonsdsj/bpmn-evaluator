@@ -134,8 +134,8 @@ OPENAI_API_KEY=not-needed
 
 ```bash
 python main.py \
-  --diagram evaluation/dataset/diagram_001.json \
-  --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  --diagram evaluation/dataset/NOTOK_1.json \
+  --checklist evaluation/dataset/Checklist.csv \
   --enunciado evaluation/dataset/Instruções.txt \
   --output evaluation/results/
 ```
@@ -152,8 +152,8 @@ First create your `.env` (see [Configure environment variables](#4-configure-env
 
 ```bash
 docker compose -f docker/docker-compose.yml run --rm pipeline \
-  --diagram evaluation/dataset/diagram_001.json \
-  --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  --diagram evaluation/dataset/NOTOK_1.json \
+  --checklist evaluation/dataset/Checklist.csv \
   --enunciado evaluation/dataset/Instruções.txt \
   --output evaluation/results/
 ```
@@ -169,19 +169,19 @@ Each agent also has its own compose service (`agent1`, `agent2`, `agent3`) for r
 ```bash
 # Agent 1 — writes evaluation/results/BPMNEvidence.json
 docker compose -f docker/docker-compose.yml run --rm agent1 \
-  --diagram evaluation/dataset/diagram_001.json \
-  --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  --diagram evaluation/dataset/NOTOK_1.json \
+  --checklist evaluation/dataset/Checklist.csv \
   --output evaluation/results/BPMNEvidence.json
 
 # Agent 2 — reads evidence, writes evaluation/results/BPMNAssessment.json
 docker compose -f docker/docker-compose.yml run --rm agent2 \
   --evidence evaluation/results/BPMNEvidence.json \
-  --checklist "evaluation/dataset/Checklist completo - Modelagem 1 - Básico.csv" \
+  --checklist evaluation/dataset/Checklist.csv \
   --output evaluation/results/BPMNAssessment.json
 
 # Agent 3 — reads assessment, writes evaluation/results/BPMNFeedback.json
 docker compose -f docker/docker-compose.yml run --rm agent3 \
-  --diagram evaluation/dataset/diagram_001.json \
+  --diagram evaluation/dataset/NOTOK_1.json \
   --enunciado evaluation/dataset/Instruções.txt \
   --assessment evaluation/results/BPMNAssessment.json \
   --output evaluation/results/BPMNFeedback.json

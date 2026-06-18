@@ -63,7 +63,7 @@ O Agente 2 gera um arquivo `assessment_review.json`. O avaliador humano abre o a
 
 ### Agente 3: Gerador de Feedback Formativo
 
-**Entrada:** `BPMNAssessment` validado pelo humano.
+**Entrada:** `BPMNAssessment` validado pelo humano + enunciado + diagrama.
 
 **O que faz:** produz feedback formativo personalizado — não apenas lista os erros, mas explica por que cada um é um problema pedagógico e como corrigi-lo. Monitora se todos os erros identificados foram cobertos no feedback antes de emitir.
 
