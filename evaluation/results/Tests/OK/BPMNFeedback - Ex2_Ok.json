@@ -1,270 +1,76 @@
 {
-  "grades_and_feedbacks": [
-    [
-      {
-        "value": 0.3,
-        "category": "O conector “fluxo de sequência” está sendo utilizado apenas entre raias?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "O conector “fluxo de mensagem” está sendo utilizado apenas entre piscinas?"
-      },
-      "Critério não aplicável a este diagrama (Agent 1 appropriately marks this as non-applicable since the diagram contains only one pool. Message flows are only relevant between pools, so the criterion genuinely does not apply. The reasoning is sound and well-supported.)"
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "Os desvios (Gateway) estão sendo conectados pelo conector fluxo de sequência (linha constante)?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "Evento de início foi inserido para cada piscina?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "Evento final foi inserido para cada piscina?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "Existe apenas um evento inicial na piscina?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "Evento de término estabelecido quando o fluxo é interrompido por alguma inconsistência ou em algum fluxo alternativo?"
-      },
-      "Critério não aplicável a este diagrama (Agent 1 marks this non-applicable, stating the diagram has no interrupted flows. Without evidence of exceptions or alternative termination paths requiring special end events, this judgment appears reasonable. However, the two end events identified earlier suggest alternative paths exist, creating some uncertainty about whether this truly doesn't apply.)"
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "Os desvios (Gateway) possuem mais de um fluxo?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "O tipo de cada tarefa está correto?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "O tipo de cada gateway está correto?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "O tipo de cada evento está correto?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "Cada raia possui o seu respectivo responsável?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.3,
-        "category": "As tarefas estão associadas a apenas uma raia?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "Todas as atividades do processo foram representadas em raias diferentes?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "As tarefas esperadas para o processo foram modeladas?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "Os atores esperados para o processo foram modelados?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "Os eventos esperados foram modelados?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "Os objetos de fluxo esperados foram modelados?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "Os gateways esperados para o processo foram modelados?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "Todas as tarefas possuem apenas um fluxo de saída?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "Todas as tarefas representam ações? (há ausência de tarefa que representa um resultado?)"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "Todas as tarefas estão dispostas na raia do responsável correto?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "Evento de início e fim possuem rótulo?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "Os desvios (Gateway) exclusivos possuem rótulo com a decisão a ser tomada?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.16000000000000003,
-        "category": "Os gateways possuem uma convergência quando aplicável?"
-      },
-      "**Feedback sobre Convergência de Gateways:**\n\nSeu diagrama possui dois gateways divergentes (\"Resultado da triagem\" e \"Resultado da proposta\") que não convergem posteriormente. Em BPMN, quando um gateway abre caminhos alternativos que depois se unem, é necessário um gateway de convergência. No seu caso, após \"Resultado da proposta\", ambos os caminhos (oferta aceita/recusada) levam a \"Enviar oferta ao candidato\" - aqui deveria haver um gateway exclusivo de convergência antes dessa tarefa. Isso to..."
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "As tarefas possuem um substantivo e estão no infinitivo?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "As descrições das tarefas estão escritas com uma descrição breve e objetiva?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "O nome da piscina corresponde ao nome do processo?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "Os nomes das tarefas não estão escritas em forma de siglas ou abreviaturas?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "São usados nomes breves e objetivos para os eventos, os gateways e as atividades?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "A nomenclatura dos objetos, tarefas, subprocessos, piscinas e raias está padronizada? (exemplo, tamanho, dentro ou fora do elemento, acima, abaixo ou ao lado)"
-      },
-      "Critério não aplicável a este diagrama (Agent 1 marks this as non-applicable because the diagram has no subprocesses. However, the criterion asks about standardization across objects, tasks, pools, and lanes—not just subprocesses. The non-applicability judgment may be too narrow. This criterion could still apply to other elements.)"
-    ],
-    [
-      {
-        "value": 0.2,
-        "category": "As tarefas redundantes foram excluídas?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "Existe ausência de cruzamento de linhas ou de conexões entre elementos?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "Os atores estão inseridos nas raias de acordo com a sua ordem de aparecimento no processo?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "O fluxo do processo está sendo representado da esquerda para a direita?"
-      },
-      "Não avaliado"
-    ],
-    [
-      {
-        "value": 0.1,
-        "category": "Todos os elementos estão conectados?"
-      },
-      "✓ Critério atendido com sucesso."
-    ],
-    [
-      {
-        "value": 0.0,
-        "category": "As tarefas e desvios (Gateway) estão dispostos sob a lógica de funcionamento do processo?"
-      },
-      "Não avaliado"
-    ]
-  ]
+  "final_grade": 9.8,
+  "category_grades": [
+    {
+      "category": "syntax",
+      "weight": 0.3,
+      "max_score": 3.0,
+      "penalty": 0,
+      "score": 3.0
+    },
+    {
+      "category": "proposal",
+      "weight": 0.2,
+      "max_score": 2.0,
+      "penalty": 0,
+      "score": 2.0
+    },
+    {
+      "category": "semantics",
+      "weight": 0.2,
+      "max_score": 2.0,
+      "penalty": 0,
+      "score": 2.0
+    },
+    {
+      "category": "best_practices",
+      "weight": 0.2,
+      "max_score": 2.0,
+      "penalty": 0.2,
+      "score": 1.8
+    },
+    {
+      "category": "readability",
+      "weight": 0.1,
+      "max_score": 1.0,
+      "penalty": 0,
+      "score": 1.0
+    }
+  ],
+  "feedback_items": [
+    {
+      "criterion_id": "best_practices_3",
+      "category": "best_practices",
+      "question": "Os gateways possuem uma convergência quando aplicável?",
+      "element": "diagrama",
+      "applied_penalty": 0.2,
+      "feedback": "## Feedback sobre Convergência de Gateways\n\n**Onde está o erro:** Os dois gateways de decisão do seu diagrama — \"Resultado da triagem\" e \"Resultado da proposta\" — abrem caminhos divergentes que não convergem novamente antes do fim do processo. O primeiro gateway separa candidatos \"Selecionado\" (que prosseguem) de \"Descartado\" (que terminam), e o segundo separa \"Oferta aceita\" (que vai para integração) de \"Oferta recusada\" (que volta para selecionar outro candidato). Esses fluxos paralelos nunca se encontram novamente em um ponto comum.\n\n**Por que é um problema:** Em BPMN, quando um gateway abre múltiplos caminhos (divergência), eles devem convergir em um gateway de junção antes de continuar o fluxo principal. Isso garante que o processo tenha uma estrutura clara e evita ambiguidades sobre quando o fluxo realmente prossegue. Sem convergência, fica confuso se o processo termina quando um candidato é descartado, ou se há outras atividades que devem ocorrer independentemente do caminho escolhido. Além disso, compromete a rastreabilidade e a compreensão do processo por outros stakeholders.\n\n**Como corrigir:** Adicione um gateway de convergência (junção) após o \"Resultado da triagem\" que receba tanto o fluxo \"Descartado\" quanto o fluxo \"Selecionado\", permitindo que o processo continue de forma controlada. Da mesma forma, após o \"Resultado da proposta\", crie uma convergência que unifique os caminhos \"Oferta aceita\" e \"Oferta recusada\" antes de prosseguir para as próximas atividades. Isso tornará o fluxo mais estruturado e fácil de entender."
+    }
+  ],
+  "strengths": [
+    "O conector “fluxo de sequência” está sendo utilizado apenas entre raias?",
+    "Os desvios (Gateway) estão sendo conectados pelo conector fluxo de sequência (linha constante)?",
+    "Evento de início foi inserido para cada piscina?",
+    "Evento final foi inserido para cada piscina?",
+    "Existe apenas um evento inicial na piscina?",
+    "Os desvios (Gateway) possuem mais de um fluxo?",
+    "O tipo de cada tarefa está correto?",
+    "Cada raia possui o seu respectivo responsável?",
+    "As tarefas estão associadas a apenas uma raia?",
+    "As tarefas esperadas para o processo foram modeladas?",
+    "Os atores esperados para o processo foram modelados?",
+    "Os eventos esperados foram modelados?",
+    "Os gateways esperados para o processo foram modelados?",
+    "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?",
+    "Todas as tarefas possuem apenas um fluxo de saída?",
+    "Todas as tarefas representam ações? (há ausência de tarefa que representa um resultado?)",
+    "Evento de início e fim possuem rótulo?",
+    "As tarefas possuem um substantivo e estão no infinitivo?",
+    "As descrições das tarefas estão escritas com uma descrição breve e objetiva?",
+    "O nome da piscina corresponde ao nome do processo?",
+    "Os nomes das tarefas não estão escritas em forma de siglas ou abreviaturas?",
+    "As tarefas redundantes foram excluídas?",
+    "Todos os elementos estão conectados?"
+  ],
+  "student_report": "# Relatório de Avaliação — Modelagem do Processo de Recrutamento e Seleção\n\nVocê entregou um trabalho de excelente qualidade, com uma nota final de **9.80 / 10**. Sua modelagem demonstra compreensão sólida dos conceitos de BPMN e você conseguiu representar corretamente a maioria dos elementos esperados: tarefas, eventos, piscinas, raias e gateways. O diagrama está bem estruturado, com nomenclatura adequada e fluxos bem conectados. Há apenas um ponto específico de melhoria relacionado à convergência de gateways que, quando corrigido, tornará seu modelo ainda mais robusto e alinhado com as melhores práticas de modelagem.\n\n## Resultado\n\n| Categoria | Peso | Penalidade | Nota | Máximo |\n|---|---|---|---|---|\n| syntax | 30% | -0.00 | 3.00 | 3.00 |\n| proposal | 20% | -0.00 | 2.00 | 2.00 |\n| semantics | 20% | -0.00 | 2.00 | 2.00 |\n| best_practices | 20% | -0.20 | 1.80 | 2.00 |\n| readability | 10% | -0.00 | 1.00 | 1.00 |\n\n## Pontos a melhorar\n\n<!-- criterio:best_practices_3 -->\n### Convergência de gateways\n\nVocê abriu dois gateways de decisão no seu diagrama — \"Resultado da triagem\" e \"Resultado da proposta\" — que criam caminhos divergentes sem convergência posterior. No primeiro gateway, candidatos \"Selecionado\" prosseguem enquanto \"Descartado\" terminam o fluxo. No segundo, \"Oferta aceita\" segue para integração e \"Oferta recusada\" retorna para selecionar outro candidato. O problema é que esses fluxos paralelos nunca se encontram novamente em um ponto comum.\n\nEm BPMN, quando um gateway abre múltiplos caminhos, eles devem convergir em um gateway de junção antes de continuar o fluxo principal. Isso garante clareza estrutural e evita ambiguidades sobre quando o processo realmente prossegue. Sem convergência, fica confuso se o processo termina quando um candidato é descartado ou se há atividades que devem ocorrer independentemente do caminho escolhido. Além disso, compromete a rastreabilidade e a compreensão do processo por outros stakeholders.\n\n**Para corrigir:** Adicione um gateway de convergência (junção) após o \"Resultado da triagem\" que receba tanto o fluxo \"Descartado\" quanto o fluxo \"Selecionado\", permitindo que o processo continue de forma controlada. Da mesma forma, após o \"Resultado da proposta\", crie uma convergência que unifique os caminhos \"Oferta aceita\" e \"Oferta recusada\" antes de prosseguir para as próximas atividades. Isso tornará o fluxo mais estruturado e fácil de entender.\n\n## O que você acertou\n\nVocê demonstrou domínio excelente dos fundamentos de BPMN. Todos os elementos esperados foram modelados corretamente: as tarefas estão bem definidas e no infinitivo, os eventos de início e fim estão presentes em cada piscina com rótulos apropriados, e as raias representam adequadamente os atores (RH e Gestor de Departamento). \n\nOs gateways foram corretamente identificados e conectados com fluxos de sequência, e você conseguiu capturar a lógica do processo de forma clara. A nomenclatura é consistente, sem abreviaturas desnecessárias, e todas as tarefas estão associadas a apenas uma raia. Além disso, você eliminou redundâncias e garantiu que todos os elementos estejam conectados, criando um diagrama coeso e fácil de seguir.\n\n---\n\nParabéns pelo excelente trabalho! Você está no caminho certo e demonstra sólida compreensão de modelagem de processos. Com a simples adição de gateways de convergência, seu diagrama estará ainda mais robusto e seguirá rigorosamente as melhores práticas de BPMN. Continue assim!\n\n## Resultado (oficial)\n\n| Categoria | Peso | Penalidade | Nota | Máximo |\n|---|---|---|---|---|\n| syntax | 30% | -0.00 | 3.00 | 3.00 |\n| proposal | 20% | -0.00 | 2.00 | 2.00 |\n| semantics | 20% | -0.00 | 2.00 | 2.00 |\n| best_practices | 20% | -0.20 | 1.80 | 2.00 |\n| readability | 10% | -0.00 | 1.00 | 1.00 |\n\n**Nota final: 9.80 / 10**"
 }
