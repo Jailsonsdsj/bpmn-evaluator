@@ -1,0 +1,270 @@
+{
+  "grades_and_feedbacks": [
+    [
+      {
+        "value": 0.3,
+        "category": "O conector “fluxo de sequência” está sendo utilizado apenas entre raias?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "O conector “fluxo de mensagem” está sendo utilizado apenas entre piscinas?"
+      },
+      "Critério não aplicável a este diagrama (The diagram has only one pool, so message flows between pools are structurally impossible. NAO_APLICAVEL is the correct classification. This is a clear-cut case.)"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Os desvios (Gateway) estão sendo conectados pelo conector fluxo de sequência (linha constante)?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Evento de início foi inserido para cada piscina?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Evento final foi inserido para cada piscina?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Existe apenas um evento inicial na piscina?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Evento de término estabelecido quando o fluxo é interrompido por alguma inconsistência ou em algum fluxo alternativo?"
+      },
+      "Critério não aplicável a este diagrama (Agent 1 claims no interrupted flows exist. However, the diagram has two end events ('Candidato eliminado' suggests an alternative/interrupted path), which could qualify as a termination event for an inconsistency. The NAO_APLICAVEL classification is questionable — 'Candidato eliminado' may represent exactly the scenario this criterion targets. Confidence is low.)"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Os desvios (Gateway) possuem mais de um fluxo?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "O tipo de cada tarefa está correto?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "O tipo de cada gateway está correto?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "O tipo de cada evento está correto?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "Cada raia possui o seu respectivo responsável?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.3,
+        "category": "As tarefas estão associadas a apenas uma raia?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "Todas as atividades do processo foram representadas em raias diferentes?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "As tarefas esperadas para o processo foram modeladas?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os atores esperados para o processo foram modelados?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os eventos esperados foram modelados?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "Os objetos de fluxo esperados foram modelados?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os gateways esperados para o processo foram modelados?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Todas as tarefas possuem apenas um fluxo de saída?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Todas as tarefas representam ações? (há ausência de tarefa que representa um resultado?)"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "Todas as tarefas estão dispostas na raia do responsável correto?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Evento de início e fim possuem rótulo?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "Os desvios (Gateway) exclusivos possuem rótulo com a decisão a ser tomada?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.16000000000000003,
+        "category": "Os gateways possuem uma convergência quando aplicável?"
+      },
+      "## Feedback\n\nNo seu diagrama, o gateway \"Resultado da proposta\" possui dois caminhos divergentes (\"Oferta aceita\" → integração e \"Oferta recusada\" → selecionar outro candidato), mas esses fluxos nunca convergem novamente antes do evento final. Você deveria adicionar um gateway de convergência (XOR) após essas ramificações, reunindo os fluxos antes do evento de término \"Funcionário integrado\", garantindo que ambos os caminhos levem ao mesmo ponto de conclusão do processo."
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "As tarefas possuem um substantivo e estão no infinitivo?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "As descrições das tarefas estão escritas com uma descrição breve e objetiva?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "O nome da piscina corresponde ao nome do processo?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "Os nomes das tarefas não estão escritas em forma de siglas ou abreviaturas?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "São usados nomes breves e objetivos para os eventos, os gateways e as atividades?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "A nomenclatura dos objetos, tarefas, subprocessos, piscinas e raias está padronizada? (exemplo, tamanho, dentro ou fora do elemento, acima, abaixo ou ao lado)"
+      },
+      "Critério não aplicável a este diagrama (Agent 1 marks NAO_APLICAVEL because there are no subprocesses. However, the criterion covers nomenclature standardization for objects, tasks, pools, and lanes — not just subprocesses. The absence of subprocesses alone does not make the entire criterion inapplicable. This classification may be incorrect.)"
+    ],
+    [
+      {
+        "value": 0.2,
+        "category": "As tarefas redundantes foram excluídas?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "Existe ausência de cruzamento de linhas ou de conexões entre elementos?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "Os atores estão inseridos nas raias de acordo com a sua ordem de aparecimento no processo?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "O fluxo do processo está sendo representado da esquerda para a direita?"
+      },
+      "Não avaliado"
+    ],
+    [
+      {
+        "value": 0.1,
+        "category": "Todos os elementos estão conectados?"
+      },
+      "✓ Critério atendido com sucesso."
+    ],
+    [
+      {
+        "value": 0.0,
+        "category": "As tarefas e desvios (Gateway) estão dispostos sob a lógica de funcionamento do processo?"
+      },
+      "Não avaliado"
+    ]
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "final_grade": 8.1,
+  "category_grades": [
+    {
+      "category": "syntax",
+      "weight": 0.3,
+      "max_score": 3.0,
+      "penalty": 0,
+      "score": 3.0
+    },
+    {
+      "category": "proposal",
+      "weight": 0.2,
+      "max_score": 2.0,
+      "penalty": 0,
+      "score": 2.0
+    },
+    {
+      "category": "semantics",
+      "weight": 0.2,
+      "max_score": 2.0,
+      "penalty": 1.5,
+      "score": 0.5
+    },
+    {
+      "category": "best_practices",
+      "weight": 0.2,
+      "max_score": 2.0,
+      "penalty": 0.4,
+      "score": 1.6
+    },
+    {
+      "category": "readability",
+      "weight": 0.1,
+      "max_score": 1.0,
+      "penalty": 0,
+      "score": 1.0
+    }
+  ],
+  "feedback_items": [
+    {
+      "criterion_id": "semantics_1",
+      "category": "semantics",
+      "question": "Todas as tarefas estão sendo conectadas com o restante do processo por meio dos objetos de conexão?",
+      "element": "diagrama",
+      "applied_penalty": 0.75,
+      "feedback": "## Feedback sobre Conectividade das Tarefas\n\n**Onde está o erro:** A tarefa *\"Selecionar candidato juntamente com o RH\"* (atribuída ao Gestor do departamento) não possui nenhuma seta de entrada conectada a ela. Ela envia um fluxo para *\"Enviar oferta ao candidato\"*, mas nenhum elemento anterior aponta para ela, deixando-a \"solta\" no diagrama.\n\n**Por que isso é um problema:** Em BPMN, toda tarefa (exceto aquelas imediatamente após um evento de início) deve ter ao menos uma conexão de entrada, indicando o que a desencadeia. Sem essa ligação, o diagrama fica ambíguo: não é possível saber quando nem como essa seleção é ativada no processo. Isso compromete a rastreabilidade do fluxo e impede que qualquer pessoa lendo o modelo entenda a sequência lógica — afinal, a seleção do candidato só faz sentido após as entrevistas terem sido realizadas.\n\n**Como corrigir:** Conecte a tarefa *\"Realizar entrevista técnica\"* (elemento `F474AzMM6KyM`) à tarefa *\"Selecionar candidato juntamente com o RH\"* por meio de uma seta de sequência. Assim, o fluxo ficaria: *Realizar entrevista comportamental* → *Realizar entrevista técnica* → *Selecionar candidato juntamente com o RH* → *Enviar oferta ao candidato*, representando corretamente a ordem em que o gestor e o RH tomam a decisão após as entrevistas."
+    },
+    {
+      "criterion_id": "semantics_2",
+      "category": "semantics",
+      "question": "Todas as tarefas possuem apenas um fluxo de saída?",
+      "element": "diagrama",
+      "applied_penalty": 0.75,
+      "feedback": "## Feedback sobre o Diagrama\n\n**Onde está o erro:** Duas tarefas no seu diagrama não possuem fluxo de saída: \"Realizar entrevista técnica\" (id: F474AzMM6KyM) e \"Candidato eliminado\" (id: aaW6fiOGNuQS). Ambas recebem conexões de entrada, mas não levam a nenhum elemento seguinte, deixando o fluxo \"pendurado\" sem continuidade.\n\n**Por que isso é um problema:** Em BPMN, toda tarefa deve ter ao menos um fluxo de saída, pois o diagrama precisa representar o que acontece *depois* de cada atividade ser concluída. Quando uma tarefa não tem saída, o processo fica incompleto e ambíguo — o leitor não consegue saber se o processo termina ali, se retorna a algum ponto anterior ou se avança para outra etapa. No caso de \"Realizar entrevista técnica\", o processo de seleção simplesmente para sem chegar à avaliação dos candidatos; já em \"Candidato eliminado\", não fica claro se o processo encerra para aquele candidato ou se há algum retorno ao fluxo principal.\n\n**Como corrigir:** Para \"Realizar entrevista técnica\", conecte sua saída à tarefa \"Selecionar candidato juntamente com o RH\" (a574PxX6_UE_), que é a etapa seguinte natural após as entrevistas. Para \"Candidato eliminado\", como representa o fim do caminho para candidatos descartados na triagem, conecte sua saída a um evento de fim (um círculo com borda grossa, semelhante ao evento \"idv55pArqXxb\" já existente no diagrama), sinalizando explicitamente que aquele ramo do processo se encerra ali."
+    },
+    {
+      "criterion_id": "best_practices_1",
+      "category": "best_practices",
+      "question": "Evento de início e fim possuem rótulo?",
+      "element": "diagrama",
+      "applied_penalty": 0.2,
+      "feedback": "## Feedback sobre Rotulagem de Eventos\n\n**Onde está o erro:** O evento de fim do seu diagrama (o círculo com borda grossa que aparece após a tarefa \"Realizar integração e treinamentos\") não possui nenhum rótulo — o campo de texto está vazio. Você pode identificá-lo como o último elemento do fluxo principal, conectado pela seta que sai de \"Realizar integração e treinamentos\".\n\n**Por que isso é um problema:** Em BPMN, eventos de início e fim devem ser rotulados para comunicar claramente *o que* desencadeia o processo e *o que* representa sua conclusão. Um evento sem nome deixa o leitor sem saber qual é o estado final do processo — neste caso, seria algo como \"Funcionário integrado\" ou \"Contratação concluída\". A ausência do rótulo compromete a legibilidade e a comunicação do modelo, que é justamente o propósito central de um diagrama de processo.\n\n**Como corrigir:** Adicione um rótulo descritivo ao evento de fim vazio. Considerando o contexto do seu diagrama, uma sugestão adequada seria **\"Funcionário contratado e integrado\"**, pois ele encerra o fluxo após a tarefa \"Realizar integração e treinamentos\". Da mesma forma, confirme que o evento de início (\"Necessidade de contratação\") também está claramente rotulado — neste caso ele já possui texto, então apenas o evento final precisa ser corrigido."
+    },
+    {
+      "criterion_id": "best_practices_3",
+      "category": "best_practices",
+      "question": "Os gateways possuem uma convergência quando aplicável?",
+      "element": "diagrama",
+      "applied_penalty": 0.2,
+      "feedback": "## Feedback sobre Convergência de Gateways\n\n**Onde está o erro:** No seu diagrama, há dois gateways de decisão — \"Resultado da triagem\" (C074) e \"Resultado da proposta\" (4~74T) — que divergem em múltiplos caminhos, mas nenhum deles possui um gateway de convergência correspondente. Por exemplo, o gateway \"Resultado da triagem\" separa o fluxo em \"Selecionado\" (que segue para entrevistas) e \"Descartado\" (que vai para \"Candidato eliminado\"), mas esses caminhos nunca se reencontram formalmente. O mesmo ocorre com \"Resultado da proposta\", cujos ramos \"Oferta aceita\" e \"Oferta recusada\" convergem diretamente para a tarefa \"Enviar oferta ao candidato\" sem um gateway explícito de junção.\n\n**Por que isso é um problema:** Em BPMN, quando um gateway abre múltiplos caminhos alternativos ou paralelos, a boa prática exige um gateway de convergência (geralmente um XOR ou AND de junção) para reunir esses caminhos antes de continuar o fluxo. Sem isso, o diagrama fica ambíguo: não fica claro em que ponto o processo retoma um fluxo único, o que pode gerar confusão sobre o comportamento real do processo — especialmente para quem for implementá-lo ou automatizá-lo.\n\n**Como corrigir:** Para o gateway \"Resultado da proposta\", insira um gateway XOR de convergência logo antes da tarefa \"Realizar integração e treinamentos\", reunindo os caminhos \"Oferta aceita\" e o retorno de \"Selecionar outro candidato\". Para o gateway \"Resultado da triagem\", considere adicionar um evento de fim específico para o caminho \"Descartado\" (indicando que aquele candidato encerra seu fluxo ali), o que é uma alternativa válida quando um ramo realmente termina — mas o caminho principal deve convergir adequadamente antes de prosseguir para as entrevistas."
+    }
+  ],
+  "strengths": [
+    "O conector “fluxo de sequência” está sendo utilizado apenas entre raias?",
+    "Os desvios (Gateway) estão sendo conectados pelo conector fluxo de sequência (linha constante)?",
+    "Evento de início foi inserido para cada piscina?",
+    "Evento final foi inserido para cada piscina?",
+    "Existe apenas um evento inicial na piscina?",
+    "Os desvios (Gateway) possuem mais de um fluxo?",
+    "O tipo de cada tarefa está correto?",
+    "Cada raia possui o seu respectivo responsável?",
+    "As tarefas estão associadas a apenas uma raia?",
+    "As tarefas esperadas para o processo foram modeladas?",
+    "Os atores esperados para o processo foram modelados?",
+    "Os eventos esperados foram modelados?",
+    "Os gateways esperados para o processo foram modelados?",
+    "Todas as tarefas representam ações? (há ausência de tarefa que representa um resultado?)",
+    "As tarefas possuem um substantivo e estão no infinitivo?",
+    "As descrições das tarefas estão escritas com uma descrição breve e objetiva?",
+    "Os nomes das tarefas não estão escritas em forma de siglas ou abreviaturas?",
+    "As tarefas redundantes foram excluídas?",
+    "Todos os elementos estão conectados?"
+  ],
+  "student_report": "# Avaliação — Modelagem do Processo de Recrutamento e Seleção\n\nVocê entregou um trabalho sólido e bem estruturado! Sua modelagem demonstra boa compreensão dos elementos fundamentais do BPMN: os atores estão corretamente representados em raias, as tarefas seguem as convenções de nomenclatura, os gateways capturam os pontos de decisão do processo e o fluxo geral reflete com fidelidade o enunciado proposto. A nota final de **8,10 / 10** confirma esse bom desempenho. Os ajustes necessários são pontuais e, uma vez corrigidos, elevarão significativamente a qualidade semântica e a clareza do seu diagrama.\n\n---\n\n## Resultado\n\n| Categoria | Peso | Penalidade | Nota | Máximo |\n|---|---|---|---|---|\n| syntax | 30% | -0.00 | 3.00 | 3.00 |\n| proposal | 20% | -0.00 | 2.00 | 2.00 |\n| semantics | 20% | -1.50 | 0.50 | 2.00 |\n| best_practices | 20% | -0.40 | 1.60 | 2.00 |\n| readability | 10% | -0.00 | 1.00 | 1.00 |\n\n**Nota final: 8.10 / 10**\n\n---\n\n## Pontos a melhorar\n\n<!-- criterio:semantics_1 -->\n### Tarefa \"Selecionar candidato juntamente com o RH\" está desconectada do fluxo de entrada\n\nA tarefa *\"Selecionar candidato juntamente com o RH\"*, atribuída ao Gestor do Departamento, envia seu fluxo corretamente para *\"Enviar oferta ao candidato\"*, mas nenhum elemento anterior aponta para ela — ela está, por assim dizer, \"solta\" no diagrama, sem nenhuma conexão de entrada.\n\nEm BPMN, toda tarefa (exceto aquelas posicionadas imediatamente após um evento de início) precisa ter ao menos uma seta de entrada, indicando o que a desencadeia. Sem essa ligação, o diagrama fica ambíguo: quem lê o modelo não consegue saber quando nem como essa etapa de seleção é ativada. Do ponto de vista do processo, a decisão de selecionar um candidato só faz sentido após as entrevistas terem sido concluídas — portanto, a ausência dessa conexão compromete a rastreabilidade e a lógica sequencial do fluxo.\n\n**Como corrigir:** conecte a tarefa *\"Realizar entrevista técnica\"* à tarefa *\"Selecionar candidato juntamente com o RH\"* por meio de uma seta de sequência. A sequência ficaria: *Realizar entrevista comportamental* → *Realizar entrevista técnica* → *Selecionar candidato juntamente com o RH* → *Enviar oferta ao candidato*, representando corretamente a ordem em que gestor e RH tomam a decisão após as entrevistas.\n\n---\n\n<!-- criterio:semantics_2 -->\n### Tarefas \"Realizar entrevista técnica\" e \"Candidato eliminado\" não possuem fluxo de saída\n\nDuas tarefas do seu diagrama recebem conexões de entrada, mas não levam a nenhum elemento seguinte: *\"Realizar entrevista técnica\"* e *\"Candidato eliminado\"*. Isso deixa o fluxo \"pendurado\", sem continuidade.\n\nEm BPMN, toda tarefa deve ter ao menos um fluxo de saída, pois o diagrama precisa mostrar o que acontece *depois* que cada atividade é concluída. Quando uma tarefa não tem saída, o processo fica incompleto e ambíguo: o leitor não consegue saber se o processo termina ali, retorna a algum ponto anterior ou avança para outra etapa. No caso de *\"Realizar entrevista técnica\"*, o processo de seleção simplesmente para sem chegar à avaliação dos candidatos; já em *\"Candidato eliminado\"*, não fica claro se o processo encerra para aquele candidato ou se há algum retorno ao fluxo principal.\n\n**Como corrigir:** para *\"Realizar entrevista técnica\"*, conecte sua saída à tarefa *\"Selecionar candidato juntamente com o RH\"*, que é a etapa seguinte natural após as entrevistas. Para *\"Candidato eliminado\"*, como esse caminho representa o encerramento do fluxo para candidatos descartados na triagem, conecte sua saída a um evento de fim (círculo com borda grossa), sinalizando explicitamente que aquele ramo do processo se encerra ali.\n\n---\n\n<!-- criterio:best_practices_1 -->\n### Evento de fim sem rótulo\n\nO evento de fim do seu diagrama — o círculo com borda grossa posicionado após a tarefa *\"Realizar integração e treinamentos\"* — não possui nenhum rótulo; o campo de texto está vazio.\n\nEm BPMN, eventos de início e fim devem ser rotulados para comunicar claramente *o que* desencadeia o processo e *o que* representa sua conclusão. Um evento sem nome deixa o leitor sem saber qual é o estado final alcançado — neste caso, algo como *\"Funcionário integrado\"* ou *\"Contratação concluída\"*. A ausência do rótulo compromete a legibilidade e a capacidade comunicativa do modelo, que é justamente o propósito central de um diagrama de processo.\n\n**Como corrigir:** adicione um rótulo descritivo ao evento de fim. Considerando o contexto do diagrama, uma sugestão adequada seria **\"Funcionário contratado e integrado\"**, encerrando o fluxo após a integração. O evento de início *\"Necessidade de contratação\"* já está corretamente rotulado, portanto apenas o evento final precisa dessa correção.\n\n---\n\n<!-- criterio:best_practices_3 -->\n### Gateways de decisão sem convergência correspondente\n\nSeu diagrama possui dois gateways de decisão — *\"Resultado da triagem\"* e *\"Resultado da proposta\"* — que divergem o fluxo em múltiplos caminhos, mas nenhum deles conta com um gateway de convergência correspondente. Por exemplo, o gateway *\"Resultado da triagem\"* separa o fluxo em *\"Selecionado\"* (que segue para as entrevistas) e *\"Descartado\"* (que vai para *\"Candidato eliminado\"*), mas esses caminhos nunca se reencontram formalmente. O mesmo ocorre com *\"Resultado da proposta\"*, cujos ramos *\"Oferta aceita\"* e *\"Oferta recusada\"* não convergem por meio de um gateway explícito de junção antes de prosseguir.\n\nEm BPMN, quando um gateway abre múltiplos caminhos alternativos, a boa prática exige um gateway de convergência (geralmente um XOR de junção) para reunir esses caminhos antes de continuar o fluxo. Sem isso, o diagrama fica ambíguo: não fica claro em que ponto o processo retoma um fluxo único, o que pode gerar confusão para quem for implementar ou automatizar o processo.\n\n**Como corrigir:** para o gateway *\"Resultado da proposta\"*, insira um gateway XOR de convergência logo antes da tarefa *\"Realizar integração e treinamentos\"*, reunindo os caminhos *\"Oferta aceita\"* e o retorno de *\"Selecionar outro candidato\"*. Para o gateway *\"Resultado da triagem\"*, uma alternativa válida é adicionar um evento de fim específico para o caminho *\"Descartado\"* — indicando que aquele candidato encerra seu fluxo ali —, enquanto o caminho principal converge adequadamente antes de prosseguir para as entrevistas.\n\n---\n\n## O que você acertou\n\nVocê demonstrou domínio consistente dos aspectos estruturais e de boas práticas do BPMN. Veja os destaques:\n\n- **Sintaxe impecável:** você utilizou corretamente os conectores de fluxo de sequência, aplicando-os apenas entre elementos dentro das raias e garantindo que os gateways estejam ligados pelo tipo correto de conector. Isso resultou em nota máxima na categoria de sintaxe.\n\n- **Proposta completa:** todas as tarefas esperadas para o processo foram modeladas, os atores corretos estão representados em suas respectivas raias, os eventos de início e fim foram inseridos adequadamente em cada piscina, e os gateways necessários para capturar os pontos de decisão do processo estão presentes.\n\n- **Boas práticas de nomenclatura:** suas tarefas estão escritas com verbo no infinitivo acompanhado de substantivo, as descrições são breves e objetivas, não há uso de siglas ou abreviações, e tarefas redundantes foram eliminadas. Cada raia identifica claramente seu responsável e as tarefas estão associadas a apenas uma raia.\n\n- **Legibilidade total:** o diagrama obteve nota máxima em legibilidade, o que demonstra cuidado com a organização visual e a clareza da comunicação do modelo.\n\n---\n\nVocê está no caminho certo! Os erros encontrados são todos corrigíveis com ajustes pontuais de conexão e rotulagem — nada que comprometa a estrutura geral do seu trabalho. Revise as conexões de entrada e saída das tarefas indicadas, adicione o rótulo ao evento de fim e inclua os gateways de convergência, e seu diagrama estará muito próximo de um modelo profissional e completo. Continue assim!"
+}
